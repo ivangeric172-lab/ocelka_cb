@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dopyt · Ocelka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Signika:wght@400;600&display=swap">
+<link rel="stylesheet" href="ocelka.css">
+<style>
+/* Форма запиту: ліворуч форма в одну колонку, праворуч «що буде далі» і телефон.
+   Стани: помилки полів → надсилання → помилка з'єднання або успіх */
+.page { display: grid; gap: var(--s3); padding-block: var(--s2) var(--s3); }
+.page > * { min-width: 0; }
+.head { display: grid; gap: var(--s1); margin-bottom: var(--s2); }
+form { display: grid; gap: var(--s2); max-width: 640px; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend, .lbl-t { padding: 0; font-weight: 600; margin-bottom: var(--s1); display: block; }
+.req { color: var(--muted); font-weight: 400; font-size: 14px; }
+.field { display: grid; gap: var(--s1); }
+.field label { font-weight: 600; }
+.field small, .sub { font-size: 14px; color: var(--muted); }
+input[type=text], input[type=tel], input[type=email], input[type=number], textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--ink); background: var(--white); border-radius: 0; font-size: 17px; }
+textarea { min-height: 140px; resize: vertical; }
+input:focus, textarea:focus { outline: 2px solid var(--line); outline-offset: 0; border-color: var(--line); }
+[aria-invalid="true"] { border-color: var(--err) !important; background: var(--err-bg) !important; }
+.ferr { color: var(--err); font-size: 15px; font-weight: 600; }
+.pair { display: grid; gap: var(--s2); }
+
+/* Хто ви */
+.who { display: grid; gap: var(--s1); }
+.who label { position: relative; display: grid; gap: 2px; padding: 14px 16px 14px 48px; border: 1px solid var(--faint); cursor: pointer; background: var(--paper); }
+.who input { position: absolute; left: 16px; top: 17px; width: 20px; height: 20px; margin: 0; accent-color: var(--ink); }
+.who b { font: 700 18px/1.2 var(--f-head); }
+.who span { font-size: 15px; color: var(--muted); }
+.who label:has(input:checked) { border-color: var(--ink); box-shadow: inset 3px 0 0 var(--ink); }
+
+/* Вибраний виріб */
+.picked { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); padding: var(--s1) 12px; background: var(--sheet); border-left: 3px solid var(--line); }
+.picked small { display: block; color: var(--muted); font-size: 14px; }
+.x { all: unset; cursor: pointer; color: var(--line); text-decoration: underline; font-size: 15px; white-space: nowrap; }
+.x:focus-visible { outline: 2px solid var(--line); }
+
+/* Прилоги */
+.drop { display: grid; gap: var(--s1); justify-items: start; padding: var(--s2); border: 1px dashed var(--line); background: var(--white); }
+.drop.over { background: var(--sheet); border-style: solid; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.drop .btn { padding: 10px 14px; }
+.drop:focus-within .btn { outline: 2px solid var(--line); outline-offset: 2px; }
+.files { list-style: none; margin: 0; padding: 0; display: grid; }
+.files li { display: grid; grid-template-columns: 22px minmax(0,1fr) auto auto; gap: var(--s1); align-items: center; padding: var(--s1) 0; border-bottom: 1px solid var(--faint); font-size: 15px; }
+.files .fn { overflow-wrap: anywhere; }
+.files .fs { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.files .none { display: block; color: var(--muted); border-bottom: 0; padding: 0; }
+
+.demo-box { border: 1px dashed var(--muted); padding: var(--s1) 12px; font-size: 14px; color: var(--muted); }
+.demo-box label { display: flex; gap: var(--s1); align-items: center; cursor: pointer; }
+.demo-box input { width: 18px; height: 18px; margin: 0; }
+
+/* Повідомлення стану */
+.msg { padding: var(--s2); display: grid; gap: var(--s1); border: 1px solid; }
+.msg:focus { outline: none; }
+.msg h2 { font-size: 21px; }
+.msg ul { margin: 0; padding-left: 20px; }
+.msg a { text-decoration: underline; text-underline-offset: 3px; }
+.msg.err { border-color: var(--err); background: var(--err-bg); }
+.msg.err h2 { color: var(--err); }
+.msg.busy { border-color: var(--line); background: var(--sheet); }
+.bar { height: 6px; background: var(--faint); }
+.bar i { display: block; height: 100%; width: 0; background: var(--line); transition: width .25s linear; }
+.submit-row { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
+
+/* Успіх */
+.done { display: grid; gap: var(--s2); max-width: 640px; }
+.done:focus { outline: none; }
+.stamp { display: inline-grid; grid-template-columns: auto auto; border: 1px solid var(--ink); justify-self: start; }
+.stamp span { padding: 4px 12px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--ink); }
+.stamp span + span { border-left: 1px solid var(--ink); }
+.stamp b { padding: 6px 12px; font: 700 18px var(--f-head); font-variant-numeric: tabular-nums; }
+.stamp b + b { border-left: 1px solid var(--ink); color: var(--ok); }
+.next { list-style: none; margin: 0; padding: 0; counter-reset: st; }
+.next li { counter-increment: st; display: grid; grid-template-columns: 36px minmax(0,1fr); gap: var(--s2); padding-block: var(--s2); border-top: 1px solid var(--faint); }
+.next li::before { content: counter(st); width: 36px; height: 36px; border: 1px solid var(--ink); display: grid; place-items: center; font: 700 17px var(--f-head); }
+.next b { display: block; font-weight: 600; }
+.next p { color: var(--muted); font-size: 15px; margin-top: 4px; }
+.sum { margin: 0; display: grid; border-top: 1px solid var(--ink); }
+.sum div { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: var(--s1); padding-block: var(--s1); border-bottom: 1px solid var(--faint); font-size: 15px; }
+.sum dt { color: var(--muted); }
+.sum dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
+
+/* Бокова колонка */
+.aside { display: grid; gap: var(--s2); align-content: start; }
+.aside > div { display: grid; gap: var(--s1); }
+.aside ol { margin: 0; padding-left: 20px; display: grid; gap: var(--s1); }
+.aside .phone { font: 700 22px/1.2 var(--f-head); }
+
+@media (min-width: 640px) { .pair { grid-template-columns: 1fr 1fr; } .who { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 960px) {
+  .page { grid-template-columns: minmax(0, 640px) minmax(0, 1fr); column-gap: var(--s3); }
+  .aside { position: sticky; top: calc(var(--tbh) + var(--s2)); padding-left: var(--s2); border-left: 1px solid var(--faint); }
+}
+</style>
+</head>
+<body data-page="dopyt">
+<script src="ocelka.js"></script>
+
+<main id="top" class="wrap">
+  <nav class="crumbs" aria-label="Kde ste"><ol><li><a href="index.html" data-home>Ocelka</a></li><li aria-current="page">Dopyt</li></ol></nav>
+
+  <div class="page">
+    <div>
+      <div class="head" id="head">
+        <h1>Dopyt na výrobu</h1>
+        <p class="lead">Odpovieme do 1 pracovného dňa. Cenovú ponuku pošleme do 2 dní.</p>
+      </div>
+
+      <form id="form" novalidate>
+        <div class="msg err" id="summary" tabindex="-1" role="alert" hidden></div>
+
+        <fieldset>
+          <legend>Kto ste</legend>
+          <div class="who">
+            <label><input type="radio" name="typ" id="typ-firma" value="firma"><b>Firma</b><span>Séria podľa výkresu, faktúra na IČO</span></label>
+            <label><input type="radio" name="typ" id="typ-sukromne" value="sukromne" checked><b>Súkromne</b><span>Jeden kus, stačí fotka alebo náčrt</span></label>
+          </div>
+        </fieldset>
+
+        <div id="picked-wrap" hidden>
+          <span class="lbl-t">Výrobok</span>
+          <div class="picked"><span><b id="picked-name"></b><small id="picked-dim"></small></span><button class="x" type="button" id="unpick">Odstrániť</button></div>
+        </div>
+
+        <div class="pair" id="firma-fields" hidden>
+          <div class="field"><label for="firma">Názov firmy <span class="req">povinné</span></label><input type="text" id="firma" name="firma" autocomplete="organization"></div>
+          <div class="field"><label for="ico">IČO <span class="req">nepovinné</span></label><input type="text" id="ico" name="ico" inputmode="numeric"></div>
+        </div>
+
+        <div class="field"><label for="meno">Meno a priezvisko <span class="req">povinné</span></label><input type="text" id="meno" name="meno" autocomplete="name"></div>
+
+        <fieldset>
+          <legend>Kontakt <span class="req">stačí jeden</span></legend>
+          <div class="pair">
+            <div class="field"><label for="telefon">Telefón</label><input type="tel" id="telefon" name="telefon" autocomplete="tel" placeholder="+421 9xx xxx xxx"></div>
+            <div class="field"><label for="email">E-mail</label><input type="email" id="email" name="email" autocomplete="email"></div>
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <label for="popis">Čo potrebujete vyrobiť <span class="req">povinné</span></label>
+          <textarea id="popis" name="popis"></textarea>
+          <small id="popis-hint"></small>
+        </div>
+
+        <div class="pair">
+          <div class="field"><label for="mnozstvo">Počet kusov</label><input type="number" id="mnozstvo" name="mnozstvo" min="1" step="1" value="1" inputmode="numeric"></div>
+          <div class="field" id="opak-wrap" hidden><span class="lbl-t">Opakovane</span><label class="row" style="font-weight:400"><input type="checkbox" id="opakovane" name="opakovane" style="width:20px;height:20px;accent-color:var(--ink);margin:0">Objednávame pravidelne</label></div>
+        </div>
+
+        <div class="field">
+          <span class="lbl-t" id="files-l">Výkres alebo fotky <span class="req">nepovinné</span></span>
+          <div class="drop" id="drop">
+            <label class="btn" for="subory"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>Vybrať súbory</label>
+            <input type="file" id="subory" multiple accept=".pdf,.dxf,.dwg,.step,.stp,.jpg,.jpeg,.png,.heic" aria-describedby="files-h">
+            <small id="files-h">alebo ich sem pretiahnite. PDF, DXF, DWG, STEP, JPG, PNG, HEIC · najviac 5 súborov po 20 MB</small>
+          </div>
+          <p class="ferr" id="files-err" role="alert" hidden></p>
+          <ul class="files" id="files"></ul>
+        </div>
+
+        <p class="sub">Údaje použijeme len na odpoveď na tento dopyt.</p>
+
+        <div class="demo-box"><label><input type="checkbox" id="demo-fail">Ukážka: simulovať výpadok spojenia pri odoslaní</label></div>
+
+        <div class="msg busy" id="busy" role="status" hidden><b id="busy-t">Odosielame dopyt…</b><div class="bar"><i id="bar"></i></div><span class="sub" id="busy-s"></span></div>
+        <div class="msg err" id="neterr" tabindex="-1" role="alert" hidden>
+          <h2>Dopyt sa nepodarilo odoslať</h2>
+          <p>Spojenie so serverom sa prerušilo. Všetko, čo ste vyplnili, aj prílohy zostali vo formulári.</p>
+          <div class="row"><button class="btn dark" type="submit">Skúsiť znova</button><span>alebo zavolajte <a href="tel:+421900000000">+421 900 000 000</a></span></div>
+        </div>
+
+        <div class="submit-row" id="submit-row"><button class="btn dark" type="submit" id="send">Odoslať dopyt <svg class="icon" aria-hidden="true"><use href="#i-arr"/></svg></button></div>
+      </form>
+
+      <section class="done" id="done" tabindex="-1" hidden aria-labelledby="done-h"></section>
+    </div>
+
+    <aside class="aside" aria-label="Čo bude ďalej">
+      <div id="aside-next">
+        <h2 style="font-size:21px">Čo bude ďalej</h2>
+        <ol id="aside-steps"></ol>
+      </div>
+      <div>
+        <span class="sub">Radšej telefonicky? Po – Pi 7:00 – 15:30</span>
+        <a class="phone" href="tel:+421900000000">+421 900 000 000</a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+const { item, cat, esc } = Ocelka;
+const $ = id => document.getElementById(id);
+const form = $("form");
+
+// ---- Тексти для двох типів клієнтів ----
+const TYP = {
+  firma: {
+    hint: "Materiál, rozmery, tolerancie a termín. Ak máte výkres, stačí odkaz na číslo výkresu.",
+    ph: "Napr. 300 ks nohy 60 × 60 × 720 mm podľa výkresu, dodanie každý mesiac",
+    files: "Výkres <span class=\"req\">odporúčame</span>",
+    steps: ["Do 1 pracovného dňa potvrdíme prijatie a doplníme otázky.", "Cenovú ponuku za kus pošleme do 2 dní.", "Pri sérii najprv vyrobíme 1 vzorku na odsúhlasenie."],
+  },
+  sukromne: {
+    hint: "Čo to je, kde to bude a približné rozmery v centimetroch.",
+    ph: "Napr. polica z nerezu nad sporák, 80 × 25 cm, s dvoma konzolami",
+    files: "Fotky alebo náčrt <span class=\"req\">nepovinné</span>",
+    steps: ["Do 1 pracovného dňa vám zavoláme.", "Dohodneme rozmery, materiál a pevnú cenu.", "Vyrobíme približne za 2 týždne. Vyzdvihnete v dielni alebo dovezieme."],
+  },
+};
+function setTyp(t) {
+  const d = TYP[t];
+  $("firma-fields").hidden = $("opak-wrap").hidden = t !== "firma";
+  $("popis-hint").textContent = d.hint;
+  $("popis").placeholder = d.ph;
+  $("files-l").innerHTML = d.files;
+  $("aside-steps").innerHTML = d.steps.map(s => `<li>${s}</li>`).join("");
+}
+form.addEventListener("change", e => { if (e.target.name === "typ") setTyp(e.target.value); });
+
+// ---- Odkiaľ prišiel: #firma, #sukromne, #p-ns-720-h, #p-nohy ----
+let picked = null;
+const hash = location.hash.slice(1);
+if (hash === "firma") $("typ-firma").checked = true;
+if (hash.startsWith("p-")) {
+  const id = hash.slice(2), it = item(id), c = cat(id);
+  picked = it ? { name: it.name, dim: it.dim } : c ? { name: `${c.name} na mieru`, dim: "Rozmery napíšte do popisu" } : null;
+}
+function showPicked() {
+  $("picked-wrap").hidden = !picked;
+  if (picked) { $("picked-name").textContent = picked.name; $("picked-dim").textContent = picked.dim; }
+}
+$("unpick").addEventListener("click", () => { picked = null; showPicked(); $("meno").focus(); });
+showPicked();
+setTyp(form.typ.value);
+
+// ---- Prílohy ----
+const OK_EXT = ["pdf","dxf","dwg","step","stp","jpg","jpeg","png","heic"], MAX_FILES = 5, MAX_MB = 20;
+let files = [];
+const mb = b => b < 102400 ? Math.max(1, Math.round(b / 1024)) + " kB" : (b / 1048576).toLocaleString("sk-SK", { maximumFractionDigits: 1 }) + " MB";
+function renderFiles() {
+  $("files").innerHTML = files.length
+    ? files.map((f, i) => `<li><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span class="fn">${esc(f.name)}</span><span class="fs">${mb(f.size)}</span><button class="x" type="button" data-rm="${i}" aria-label="Odstrániť ${esc(f.name)}">Odstrániť</button></li>`).join("")
+    : `<li class="none">Zatiaľ žiadna príloha. Dopyt môžete poslať aj bez nej.</li>`;
+}
+function addFiles(list) {
+  const errs = [];
+  for (const f of list) {
+    const ext = f.name.split(".").pop().toLowerCase();
+    if (!OK_EXT.includes(ext)) errs.push(`${f.name}: tento typ súboru neprijímame. Uložte ho ako PDF alebo JPG.`);
+    else if (f.size > MAX_MB * 1048576) errs.push(`${f.name}: má ${mb(f.size)}, najviac je ${MAX_MB} MB. Zmenšite ho alebo pošlite e-mailom.`);
+    else if (files.length >= MAX_FILES) errs.push(`${f.name}: najviac ${MAX_FILES} súborov. Ďalšie pošlite e-mailom.`);
+    else if (!files.some(x => x.name === f.name && x.size === f.size)) files.push(f);
+  }
+  $("files-err").hidden = !errs.length;
+  $("files-err").innerHTML = errs.map(esc).join("<br>");
+  renderFiles();
+}
+$("subory").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+$("files").addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if (b) { files.splice(+b.dataset.rm, 1); renderFiles(); $("subory").focus(); } });
+const drop = $("drop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); addFiles(e.dataTransfer.files); });
+renderFiles();
+
+// ---- Kontrola polí ----
+function validate(d) {
+  const errs = [];
+  if (d.typ === "firma" && !d.firma) errs.push(["firma", "Napíšte názov firmy."]);
+  if (!d.meno) errs.push(["meno", "Napíšte meno, aby sme vedeli, koho hľadať."]);
+  if (!d.telefon && !d.email) errs.push(["telefon", "Napíšte telefón alebo e-mail. Stačí jedno."]);
+  if (d.telefon && d.telefon.replace(/\D/g, "").length < 9) errs.push(["telefon", "Telefón má mať aspoň 9 číslic."]);
+  if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) errs.push(["email", "E-mail nie je v tvare meno@domena.sk."]);
+  if (d.popis.length < 10) errs.push(["popis", "Popíšte aspoň jednou vetou, čo potrebujete (aspoň 10 znakov)."]);
+  if (!(d.mnozstvo >= 1) || !Number.isInteger(d.mnozstvo)) errs.push(["mnozstvo", "Počet kusov je celé číslo od 1."]);
+  return errs;
+}
+function showErrors(errs) {
+  form.querySelectorAll(".ferr.f").forEach(n => n.remove());
+  form.querySelectorAll("[aria-invalid]").forEach(n => n.removeAttribute("aria-invalid"));
+  const sum = $("summary");
+  sum.hidden = !errs.length;
+  if (!errs.length) return;
+  for (const [id, text] of errs) {
+    const el = $(id);
+    el.setAttribute("aria-invalid", "true");
+    el.closest(".field").insertAdjacentHTML("beforeend", `<p class="ferr f" id="${id}-err">${esc(text)}</p>`);
+    el.setAttribute("aria-describedby", `${id}-err`);
+  }
+  sum.innerHTML = `<h2>Skontrolujte ${errs.length === 1 ? "1 pole" : errs.length < 5 ? errs.length + " polia" : errs.length + " polí"}</h2><ul>${errs.map(([id, t]) => `<li><a href="#${id}">${esc(t)}</a></li>`).join("")}</ul>`;
+  sum.focus();
+}
+// Po oprave poľa chyba pri ňom zmizne
+form.addEventListener("input", e => {
+  const el = e.target;
+  if (el.getAttribute("aria-invalid") !== "true") return;
+  el.removeAttribute("aria-invalid");
+  $(el.id + "-err")?.remove();
+});
+$("summary").addEventListener("click", e => { const a = e.target.closest("a"); if (a) { e.preventDefault(); $(a.getAttribute("href").slice(1)).focus(); } });
+
+// ---- Odoslanie ----
+// Zatiaľ len simulácia. Neskôr: fetch("/api/dopyt", { method: "POST", body: FormData }) na tvoj Java server.
+function sendDopyt(d, onProgress) {
+  return new Promise((resolve, reject) => {
+    const steps = ["Odosielame údaje…", ...d.subory.map((f, i) => `Nahrávame ${f.name} (${i + 1} z ${d.subory.length})`), "Ukladáme dopyt…"];
+    const fail = $("demo-fail").checked || !navigator.onLine;
+    let i = 0;
+    const tick = () => {
+      if (fail && i >= Math.ceil(steps.length / 2)) return reject(new Error("network"));
+      if (i === steps.length) return resolve({ cislo: `D-2026-${String(Math.floor(1000 + Math.random() * 9000))}` });
+      onProgress(steps[i], (i + 1) / (steps.length + 1));
+      i++;
+      setTimeout(tick, 700);
+    };
+    tick();
+  });
+}
+
+let sending = false;
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (sending) return;
+  const f = new FormData(form);
+  const d = {
+    typ: f.get("typ"), firma: (f.get("firma") || "").trim(), ico: (f.get("ico") || "").trim(),
+    meno: f.get("meno").trim(), telefon: f.get("telefon").trim(), email: f.get("email").trim(),
+    popis: f.get("popis").trim(), mnozstvo: Number(f.get("mnozstvo")), opakovane: f.get("opakovane") === "on",
+    vyrobok: picked, subory: files.slice(),
+  };
+  $("neterr").hidden = true;
+  const errs = validate(d);
+  showErrors(errs);
+  if (errs.length) return;
+
+  // Loading
+  sending = true;
+  form.setAttribute("aria-busy", "true");
+  form.querySelectorAll("input, textarea, button").forEach(n => n.disabled = true);
+  $("submit-row").hidden = true;
+  $("busy").hidden = false;
+  $("bar").style.width = "0";
+  try {
+    const res = await sendDopyt(d, (text, p) => { $("busy-s").textContent = text; $("bar").style.width = Math.round(p * 100) + "%"; });
+    showDone(d, res);
+  } catch {
+    // Error: údaje zostávajú vo formulári
+    $("busy").hidden = true;
+    $("neterr").hidden = false;
+    $("neterr").focus();
+  } finally {
+    sending = false;
+    form.removeAttribute("aria-busy");
+    form.querySelectorAll("input, textarea, button").forEach(n => n.disabled = false);
+    if (!$("neterr").hidden) $("submit-row").hidden = true; else $("submit-row").hidden = false;
+  }
+});
+
+// ---- Success ----
+function showDone(d, res) {
+  const today = new Date().toLocaleDateString("sk-SK");
+  const rows = [
+    ["Kto", d.typ === "firma" ? `${d.firma}${d.ico ? `, IČO ${d.ico}` : ""}\n${d.meno}` : d.meno],
+    ["Kontakt", [d.telefon, d.email].filter(Boolean).join("\n")],
+    d.vyrobok && ["Výrobok", d.vyrobok.name],
+    ["Popis", d.popis],
+    ["Počet", `${d.mnozstvo} ks${d.opakovane ? ", opakovane" : ""}`],
+    ["Prílohy", d.subory.length ? d.subory.map(f => f.name).join("\n") : "bez príloh"],
+  ].filter(Boolean);
+  const done = $("done");
+  done.innerHTML = `
+    <div class="stamp"><span>Číslo dopytu</span><span>Stav</span><b>${res.cislo}</b><b>Prijatý ${today}</b></div>
+    <h1 id="done-h">Ďakujeme, dopyt máme</h1>
+    <p class="lead">${d.telefon ? `Zavoláme na ${esc(d.telefon)}` : `Odpovieme na ${esc(d.email)}`} do 1 pracovného dňa. Pri otázkach uveďte číslo ${res.cislo}.</p>
+    <ol class="next">${TYP[d.typ].steps.map(s => `<li><div><b>${s}</b></div></li>`).join("")}</ol>
+    <dl class="sum">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+    <div class="row"><a class="btn dark" href="${Ocelka.home("#vyrobky")}">Späť na výrobky</a><button class="btn" type="button" id="again">Poslať ďalší dopyt</button></div>
+    <p class="note">Ukážka: dopyt sa nikam neodoslal, server zatiaľ nie je.</p>`;
+  form.hidden = true;
+  $("head").hidden = true;
+  done.hidden = false;
+  $("aside-next").hidden = true;
+  done.focus();
+  window.scrollTo(0, 0);
+  $("again").addEventListener("click", () => {
+    form.reset(); files = []; picked = null;
+    renderFiles(); showPicked(); setTyp(form.typ.value);
+    $("files-err").hidden = true; $("busy").hidden = true;
+    done.hidden = true; form.hidden = false; $("head").hidden = false; $("aside-next").hidden = false;
+    $("meno").focus();
+  });
+}
+</script>
+</body>
+</html>
