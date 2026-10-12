@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>Ocelka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Signika:wght@400;600&display=swap">
+<style>
+/* Layout: mobile-first сторінка виробника як аркуш креслення — сині лінії на білому, прямі кути, побіжалість лише біля швів; на широкому екрані дві колонки */
+:root {
+  --paper: #fbfcfe;
+  --sheet: #f2f6fc;
+  --ink: #13233f;
+  --line: #2a5bb0;
+  --faint: #c9d7ee;
+  --muted: #4c5d78;
+  --ok: #2e7d4f;
+  --f-head: "Bitter", Georgia, serif;
+  --f-body: "Signika", system-ui, sans-serif;
+  --tbh: 64px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--tbh) + 12px); }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--f-body); padding-bottom: 64px; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
+.icon { width: 22px; height: 22px; flex: none; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+h1, h2, h3 { font-family: var(--f-head); font-weight: 700; text-wrap: balance; margin: 0; }
+h2 { font-size: 26px; line-height: 1.15; }
+.sec { padding-block: 40px; border-top: 1px solid var(--ink); }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.sec-head p { margin: 0; color: var(--muted); }
+.demo { background: var(--ink); color: var(--faint); font-size: 13px; text-align: center; padding: 5px 16px; }
+
+/* Шапка */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper); border-bottom: 1px solid var(--ink); }
+.top .wrap { height: var(--tbh); display: flex; align-items: center; gap: 6px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; font: 700 23px/1 var(--f-head); }
+.brand svg { width: 30px; height: 30px; }
+.tb { display: inline-flex; align-items: center; gap: 6px; height: 42px; min-width: 42px; justify-content: center; padding: 0 8px; background: none; border: 1px solid transparent; cursor: pointer; }
+.tb:hover { border-color: var(--faint); }
+.tb .lbl { font-size: 15px; font-weight: 600; }
+.tb.menu-btn { border-color: var(--ink); padding: 0 12px; }
+.tb.call-top { display: none; }
+.lang { position: relative; }
+.lang-list { position: absolute; right: 0; top: 46px; background: var(--paper); border: 1px solid var(--ink); list-style: none; margin: 0; padding: 4px 0; min-width: 160px; }
+.lang-list button { all: unset; display: flex; justify-content: space-between; gap: 12px; width: 100%; box-sizing: border-box; padding: 8px 14px; cursor: pointer; }
+.lang-list button:hover, .lang-list button:focus-visible { background: var(--sheet); }
+.lang-list .cur { font-weight: 600; }
+.lang-list small { color: var(--muted); }
+
+/* Повноекранне меню */
+.overlay { position: fixed; inset: 0; z-index: 30; background: var(--paper); overflow-y: auto; }
+.overlay[hidden] { display: none; }
+.ov-top { position: sticky; top: 0; background: var(--paper); border-bottom: 1px solid var(--ink); }
+.ov-top .wrap { height: var(--tbh); display: flex; align-items: center; justify-content: space-between; }
+.close { display: inline-flex; gap: 8px; align-items: center; height: 42px; padding: 0 14px; background: var(--ink); color: var(--paper); border: 0; cursor: pointer; font-weight: 600; }
+.acc { list-style: none; margin: 0; padding: 8px 0 40px; }
+.acc > li { border-bottom: 1px solid var(--ink); }
+.acc-btn, .acc-link { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 2px; font: 700 21px/1.2 var(--f-head); cursor: pointer; }
+.acc-btn .pm { font: 400 28px/1 var(--f-body); width: 24px; text-align: center; }
+.acc-sub { list-style: none; margin: 0; padding: 0 0 14px 16px; }
+.acc-sub[hidden] { display: none; }
+.acc-sub a { display: flex; justify-content: space-between; padding: 10px 2px; border-top: 1px solid var(--faint); }
+.acc-sub a span { color: var(--line); }
+
+/* Пошук */
+.search-box { padding-block: 16px 8px; }
+.search-box label { display: block; font: 700 21px/1.2 var(--f-head); margin-bottom: 10px; }
+.search-box input { width: 100%; font: 18px var(--f-body); padding: 14px; border: 1px solid var(--ink); background: #fff; color: var(--ink); border-radius: 0; }
+.results { list-style: none; margin: 8px 0 40px; padding: 0; }
+.results li a { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 12px; padding: 12px 2px; border-bottom: 1px solid var(--faint); }
+.results .cat { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+.results .dim { font-variant-numeric: tabular-nums; color: var(--line); font-weight: 600; }
+.results .empty { padding: 14px 2px; color: var(--muted); }
+
+/* Перший екран */
+.hero { padding-block: 22px 34px; display: grid; gap: 22px; }
+.draw { width: 100%; height: auto; display: block; max-width: 520px; }
+.draw .s { stroke-dasharray: 900; stroke-dashoffset: 900; animation: drawin 1.6s ease-out forwards; }
+.draw .d { opacity: 0; animation: fade .6s ease-out 1.2s forwards; }
+@keyframes drawin { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 1; } }
+.hero h1 { font-size: clamp(31px, 7vw, 52px); line-height: 1.05; }
+.hero .lead { margin: 10px 0 0; font-size: 18px; max-width: 46ch; }
+.lt { display: flex; gap: 10px; align-items: baseline; margin: 16px 0 0; padding: 10px 12px; border-left: 3px solid var(--ok); background: var(--sheet); font-size: 15px; max-width: 46ch; }
+.lt b { font-weight: 600; }
+.lt small { color: var(--muted); display: block; }
+.dot { width: 9px; height: 9px; background: var(--ok); flex: none; transform: translateY(-1px); }
+.entries { display: grid; gap: 10px; margin-top: 18px; max-width: 520px; }
+.e { display: grid; gap: 2px; padding: 14px 44px 14px 16px; border: 1px solid var(--ink); position: relative; background: var(--paper); }
+.e b { font: 700 19px/1.2 var(--f-head); }
+.e span { font-size: 15px; color: var(--muted); }
+.e .arr { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+.e1 { background: var(--ink); color: var(--paper); }
+.e1 span { color: var(--faint); }
+.e:hover { border-color: var(--line); }
+
+/* Каталог */
+.cats { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--ink); }
+.cats a { display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 14px 2px; border-bottom: 1px solid var(--faint); }
+.cats a:hover b { color: var(--line); }
+.cats svg { width: 52px; height: 40px; }
+.cats b { font: 600 18px/1.25 var(--f-body); display: block; }
+.cats small { color: var(--muted); font-size: 14px; }
+.cats .arr { color: var(--line); }
+
+/* Кроки */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: st; }
+.steps li { counter-increment: st; display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--faint); }
+.steps li::before { content: counter(st); width: 36px; height: 36px; border: 1px solid var(--ink); display: grid; place-items: center; font: 700 17px var(--f-head); }
+.steps b { display: block; font-weight: 600; }
+.steps p { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.cta-line { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 18px; border: 1px solid var(--ink); font-weight: 600; }
+.btn.dark { background: var(--ink); color: var(--paper); }
+
+/* Realizácie */
+.real { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.real article { border: 1px solid var(--ink); display: grid; }
+.real .pic { background: var(--sheet); border-bottom: 1px solid var(--ink); aspect-ratio: 16 / 9; max-width: 100%; display: grid; place-items: center; }
+.real .pic svg { width: 70%; height: auto; }
+.real .body { padding: 14px; display: grid; gap: 6px; }
+.real .meta { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--faint); padding-top: 8px; margin-top: 4px; }
+.real h3 { font-size: 19px; line-height: 1.2; }
+.real p { margin: 0; font-size: 15px; }
+.note { font-size: 14px; color: var(--muted); margin: 12px 0 0; }
+
+/* Цифри */
+.nums { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+.nums div { border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 16px 14px; min-width: 0; }
+.nums b { display: block; font: 700 34px/1 var(--f-head); font-variant-numeric: tabular-nums; }
+.nums span { display: block; margin-top: 6px; font-size: 15px; color: var(--muted); }
+
+/* Футер */
+.foot { background: var(--ink); color: var(--paper); padding-block: 36px 28px; margin-top: 8px; }
+.foot .brand { color: var(--paper); margin-bottom: 20px; }
+.fcols { display: grid; gap: 26px; }
+.fcols h3 { font: 600 14px/1.2 var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+.fcols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fcols a:hover { text-decoration: underline; }
+.fcols address { font-style: normal; display: grid; gap: 6px; }
+.soc { display: flex; gap: 8px; margin-top: 14px; }
+.soc a { width: 40px; height: 40px; border: 1px solid var(--faint); display: grid; place-items: center; }
+.legal { margin-top: 26px; padding-top: 14px; border-top: 1px solid #2b3d5e; font-size: 13px; color: var(--faint); }
+
+/* Нижня панель (телефон) */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); background: var(--paper); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.dock a { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 15px; font-weight: 600; }
+.dock .d1 { background: var(--ink); color: var(--paper); }
+
+@media (min-width: 860px) {
+  body { padding-bottom: 0; }
+  .dock { display: none; }
+  .tb.call-top { display: inline-flex; border-color: var(--ink); padding: 0 12px; }
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding-block: 44px 54px; }
+  .hero .draw { order: 2; justify-self: end; }
+  .cats { grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .steps { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; }
+  .steps li { grid-template-columns: 1fr; border-top: 1px solid var(--ink); padding-top: 16px; }
+  .real { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .nums { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .fcols { grid-template-columns: repeat(4, minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .draw .s { animation: none; stroke-dashoffset: 0; } .draw .d { animation: none; opacity: 1; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-phone" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M5 2.5h3l1.5 4-2 1.2a10 10 0 0 0 4.8 4.8l1.2-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A15 15 0 0 1 3.5 4.1 1.5 1.5 0 0 1 5 2.5z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.5 2.6 2.5 12.4 0 15M10 2.5c-2.5 2.6-2.5 12.4 0 15"/></g></symbol>
+    <symbol id="i-search" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.5 12.5l5 5"/></g></symbol>
+    <symbol id="i-menu" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M3 5.5h14M3 10h14M3 14.5h14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4.5 4.5l11 11M15.5 4.5l-11 11"/></symbol>
+    <symbol id="i-arr" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M3 10h13M11 5l5 5-5 5"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.2 16.8l1-3.4A7.3 7.3 0 1 1 6.6 15.9z"/><path d="M7.4 6.6c.3 2.8 2.8 5.5 5.9 6l.9-1.6-1.8-.9-.8.8a4.6 4.6 0 0 1-2.4-2.4l.8-.8-.9-1.8z"/></g></symbol>
+    <symbol id="mark" viewBox="0 0 30 30"><g fill="none" stroke="currentColor"><rect x="2" y="2" width="26" height="26" stroke-width="2.4"/><rect x="8" y="8" width="14" height="14" stroke-width="1.4"/><path d="M2 2l6 6M28 2l-6 6M2 28l6-6M28 28l-6-6" stroke-width="1"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="demo">Ukážka dizajnu · fiktívna firma Ocelka</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Ocelka, domov"><svg aria-hidden="true"><use href="#mark"/></svg>Ocelka</a>
+    <a class="tb call-top" href="#kontakt"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg><span class="lbl">+421 900 000 000</span></a>
+    <div class="lang">
+      <button class="tb" id="lang-btn" type="button" aria-expanded="false" aria-controls="lang-list" aria-label="Jazyk: slovenčina"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span class="lbl">SK</span></button>
+      <ul class="lang-list" id="lang-list" hidden>
+        <li><button type="button" class="cur">Slovenčina <small>SK</small></button></li>
+        <li><button type="button">Čeština <small>CZ</small></button></li>
+        <li><button type="button">Deutsch <small>DE</small></button></li>
+        <li><button type="button">English <small>EN</small></button></li>
+      </ul>
+    </div>
+    <button class="tb" id="search-btn" type="button" aria-label="Hľadať"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg></button>
+    <button class="tb menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu"><svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg><span class="lbl">Menu</span></button>
+  </div>
+</header>
+
+<!-- Меню -->
+<div class="overlay" id="menu" hidden role="dialog" aria-modal="true" aria-label="Menu">
+  <div class="ov-top"><div class="wrap">
+    <span class="brand"><svg aria-hidden="true"><use href="#mark"/></svg>Ocelka</span>
+    <button class="close" type="button" data-close><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Zavrieť</button>
+  </div></div>
+  <div class="wrap">
+    <ul class="acc" id="acc"></ul>
+  </div>
+</div>
+
+<!-- Пошук -->
+<div class="overlay" id="search" hidden role="dialog" aria-modal="true" aria-label="Hľadať">
+  <div class="ov-top"><div class="wrap">
+    <span class="brand"><svg aria-hidden="true"><use href="#mark"/></svg>Ocelka</span>
+    <button class="close" type="button" data-close><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>Zavrieť</button>
+  </div></div>
+  <div class="wrap">
+    <div class="search-box">
+      <label for="q">Čo hľadáte?</label>
+      <input id="q" type="search" placeholder="napr. noha 720, drez, DN25" autocomplete="off">
+    </div>
+    <ul class="results" id="results" aria-live="polite"></ul>
+  </div>
+</div>
+
+<main id="top">
+  <section class="wrap hero">
+    <svg class="draw" viewBox="0 0 320 250" role="img" aria-label="Výkres stola S-1200 s rozmermi 1200 × 720 mm">
+      <defs>
+        <radialGradient id="tint">
+          <stop offset="0" stop-color="#d8b04a" stop-opacity=".9"/>
+          <stop offset=".3" stop-color="#c07a2c" stop-opacity=".75"/>
+          <stop offset=".55" stop-color="#8a3f86" stop-opacity=".55"/>
+          <stop offset=".78" stop-color="#2f5fb3" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#7fb2e5" stop-opacity="0"/>
+        </radialGradient>
+        <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="4" stroke="#2a5bb0" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <!-- рамка аркуша -->
+      <rect x="4" y="4" width="312" height="242" fill="none" stroke="#13233f" stroke-width="1.2"/>
+      <!-- побіжалість біля зварних швів -->
+      <g class="d" opacity=".7">
+        <ellipse cx="54" cy="59" rx="14" ry="9" fill="url(#tint)"/><ellipse cx="214" cy="59" rx="14" ry="9" fill="url(#tint)"/>
+        <ellipse cx="56" cy="142" rx="10" ry="8" fill="url(#tint)"/><ellipse cx="212" cy="142" rx="10" ry="8" fill="url(#tint)"/>
+      </g>
+      <!-- стіл -->
+      <g fill="none" stroke="#2a5bb0" stroke-width="1.6">
+        <rect class="s" x="36" y="48" width="196" height="10"/>
+        <rect class="s" x="50" y="58" width="8" height="112"/>
+        <rect class="s" x="210" y="58" width="8" height="112"/>
+        <rect class="s" x="58" y="139" width="152" height="6"/>
+        <line class="s" x1="46" y1="170" x2="62" y2="170"/><line class="s" x1="206" y1="170" x2="222" y2="170"/>
+      </g>
+      <!-- осьова лінія -->
+      <line x1="134" y1="38" x2="134" y2="178" stroke="#2a5bb0" stroke-width=".8" stroke-dasharray="10 3 2 3"/>
+      <!-- розміри -->
+      <g class="d" stroke="#13233f" stroke-width=".9" fill="#13233f" font-family="Signika, sans-serif" font-size="10.5">
+        <line x1="36" y1="30" x2="232" y2="30"/><line x1="36" y1="24" x2="36" y2="46"/><line x1="232" y1="24" x2="232" y2="46"/>
+        <polygon points="36,30 43,27.5 43,32.5" stroke="none"/><polygon points="232,30 225,27.5 225,32.5" stroke="none"/>
+        <rect x="114" y="23" width="40" height="13" fill="#fbfcfe" stroke="none"/><text x="134" y="33" text-anchor="middle" stroke="none">1200</text>
+        <line x1="22" y1="48" x2="22" y2="170"/><line x1="16" y1="48" x2="34" y2="48"/><line x1="16" y1="170" x2="46" y2="170"/>
+        <polygon points="22,48 19.5,55 24.5,55" stroke="none"/><polygon points="22,170 19.5,163 24.5,163" stroke="none"/>
+        <text x="18" y="112" text-anchor="middle" transform="rotate(-90 18 112)" stroke="none">720 ±0,5</text>
+      </g>
+      <!-- символ кутового зварного шва -->
+      <g class="d" stroke="#13233f" stroke-width=".9" fill="none" font-family="Signika, sans-serif" font-size="10.5">
+        <line x1="216" y1="60" x2="252" y2="86"/><polygon points="216,60 223,62 220,66" fill="#13233f" stroke="none"/>
+        <line x1="252" y1="86" x2="300" y2="86"/>
+        <polygon points="262,86 262,78 270,86" fill="none"/>
+        <text x="274" y="82" fill="#13233f" stroke="none">a3</text>
+      </g>
+      <!-- вид A: переріз профілю -->
+      <g class="d">
+        <circle cx="54" cy="152" r="13" fill="none" stroke="#13233f" stroke-width=".8" stroke-dasharray="3 2"/>
+        <text x="70" y="166" font-family="Signika, sans-serif" font-size="10.5" fill="#13233f">A</text>
+        <rect x="258" y="110" width="34" height="34" fill="url(#hatch)" stroke="#2a5bb0" stroke-width="1.2"/>
+        <rect x="261" y="113" width="28" height="28" fill="#fbfcfe" stroke="#2a5bb0" stroke-width="1"/>
+        <text x="275" y="104" text-anchor="middle" font-family="Signika, sans-serif" font-size="10.5" fill="#13233f">A (2:1)</text>
+        <text x="275" y="158" text-anchor="middle" font-family="Signika, sans-serif" font-size="9.5" fill="#4c5d78">40×40×2</text>
+      </g>
+      <!-- штамп -->
+      <g class="d" font-family="Signika, sans-serif" fill="#13233f">
+        <rect x="4" y="196" width="312" height="50" fill="none" stroke="#13233f" stroke-width="1"/>
+        <line x1="120" y1="196" x2="120" y2="246" stroke="#13233f" stroke-width=".8"/>
+        <line x1="196" y1="196" x2="196" y2="246" stroke="#13233f" stroke-width=".8"/>
+        <line x1="252" y1="196" x2="252" y2="246" stroke="#13233f" stroke-width=".8"/>
+        <text x="10" y="209" font-size="8" fill="#4c5d78">Názov</text><text x="10" y="229" font-size="12.5" font-weight="600">Stôl S-1200</text>
+        <text x="126" y="209" font-size="8" fill="#4c5d78">Materiál</text><text x="126" y="229" font-size="12.5">1.4301</text>
+        <text x="202" y="209" font-size="8" fill="#4c5d78">Mierka</text><text x="202" y="229" font-size="12.5">1 : 20</text>
+        <text x="284" y="232" font-size="12.5" font-family="Bitter, serif" font-weight="700" text-anchor="middle">Ocelka</text>
+      </g>
+    </svg>
+    <div>
+      <h1>Nerez a plech na mieru</h1>
+      <p class="lead">Vyrobíme jeden kus aj sériu. Podľa vášho výkresu, fotky alebo náčrtu.</p>
+      <p class="lt"><span class="dot" aria-hidden="true"></span><span><b>Aktuálny termín výroby: približne 2 týždne</b><small>Aktualizované 6. 10. 2026</small></span></p>
+      <div class="entries">
+        <a class="e e1" href="#firmy"><b>Som firma</b><span>Potrebujem sériu podľa výkresu</span><svg class="icon arr" aria-hidden="true"><use href="#i-arr"/></svg></a>
+        <a class="e" href="#zakazka"><b>Súkromne</b><span>Potrebujem jeden kus</span><svg class="icon arr" aria-hidden="true"><use href="#i-arr"/></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="vyrobky"><div class="wrap">
+    <div class="sec-head"><h2>Výrobky</h2><p>Všetko z nerezu 1.4301 alebo pozinkovaného plechu</p></div>
+    <ul class="cats" id="cats"></ul>
+  </div></section>
+
+  <section class="sec" id="firmy"><div class="wrap">
+    <div class="sec-head"><h2>Pre firmy</h2><p>Sériová výroba podľa vášho výkresu</p></div>
+    <ol class="steps">
+      <li><div><b>Pošlite výkres</b><p>PDF, DXF alebo STEP. Stačí aj náčrt s rozmermi.</p></div></li>
+      <li><div><b>Cenová ponuka do 2 dní</b><p>Cena za kus podľa množstva a materiálu.</p></div></li>
+      <li><div><b>Vzorka</b><p>Pri sérii najprv vyrobíme jeden kus na odsúhlasenie.</p></div></li>
+      <li><div><b>Výroba a dodanie</b><p>Rovnaká kvalita v každej dávke, dodanie na adresu.</p></div></li>
+    </ol>
+    <div class="cta-line"><a class="btn dark" href="#kontakt">Poslať výkres <svg class="icon" aria-hidden="true"><use href="#i-arr"/></svg></a></div>
+  </div></section>
+
+  <section class="sec" id="zakazka"><div class="wrap">
+    <div class="sec-head"><h2>Jeden kus na zákazku</h2><p>Keď potrebujete len jednu vec</p></div>
+    <ol class="steps">
+      <li><div><b>Odfoťte alebo nakreslite</b><p>Fotka miesta a približné rozmery stačia.</p></div></li>
+      <li><div><b>Zavoláme vám</b><p>Dohodneme detaily a materiál.</p></div></li>
+      <li><div><b>Cena vopred</b><p>Pred výrobou viete presnú sumu.</p></div></li>
+      <li><div><b>Vyzdvihnutie alebo doprava</b><p>Osobne v dielni alebo dovezieme.</p></div></li>
+    </ol>
+    <div class="cta-line"><a class="btn dark" href="#kontakt">Poslať fotku <svg class="icon" aria-hidden="true"><use href="#i-arr"/></svg></a><a class="btn" href="#kontakt"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>Zavolať</a></div>
+  </div></section>
+
+  <section class="sec" id="realizacie"><div class="wrap">
+    <div class="sec-head"><h2>Realizácie</h2><p>Čo sme vyrobili</p></div>
+    <ul class="real">
+      <li><article>
+        <div class="pic"><svg viewBox="0 0 200 110" aria-hidden="true"><g fill="none" stroke="#2a5bb0" stroke-width="1.6"><rect x="20" y="30" width="160" height="8"/><rect x="30" y="38" width="6" height="58"/><rect x="164" y="38" width="6" height="58"/><rect x="36" y="76" width="128" height="5"/><rect x="40" y="50" width="120" height="4"/></g></svg></div>
+        <div class="body"><h3>Pracovné stoly pre reštauráciu</h3><p>12 stolov s policou, nerez 1.4301, na mieru kuchyne.</p><div class="meta"><span>Gastro</span><span>2026</span></div></div>
+      </article></li>
+      <li><article>
+        <div class="pic"><svg viewBox="0 0 200 110" aria-hidden="true"><g fill="none" stroke="#2a5bb0" stroke-width="1.6"><path d="M20 40h160"/><path d="M30 40c0 22 16 30 30 30h80c14 0 30-8 30-30"/><rect x="138" y="70" width="14" height="34"/></g></svg></div>
+        <div class="body"><h3>Odkvapy na rodinný dom</h3><p>42 m žľabu 125 mm a štyri zvody, montáž v jeden deň.</p><div class="meta"><span>Klampiarske práce</span><span>2026</span></div></div>
+      </article></li>
+      <li><article>
+        <div class="pic"><svg viewBox="0 0 200 110" aria-hidden="true"><g fill="none" stroke="#2a5bb0" stroke-width="1.6"><rect x="40" y="16" width="12" height="80"/><rect x="70" y="16" width="12" height="80"/><rect x="100" y="16" width="12" height="80"/><rect x="130" y="16" width="12" height="80"/><path d="M34 96h116"/></g></svg></div>
+        <div class="body"><h3>300 nôh NS-720 pre výrobcu nábytku</h3><p>Opakovaná séria každý mesiac, profil 60×60×2.</p><div class="meta"><span>Séria pre firmu</span><span>2025</span></div></div>
+      </article></li>
+    </ul>
+    <p class="note">Ukážkové realizácie. Skutočné fotky doplní firma.</p>
+  </div></section>
+
+  <section class="sec" id="cisla"><div class="wrap">
+    <div class="sec-head"><h2>Ocelka v číslach</h2></div>
+    <div class="nums">
+      <div><b>18</b><span>rokov v remesle</span></div>
+      <div><b>2 400+</b><span>nôh na stôl ročne</span></div>
+      <div><b>2 dni</b><span>na cenovú ponuku</span></div>
+      <div><b>1 ks</b><span>najmenšia zákazka</span></div>
+    </div>
+    <p class="note">Ukážkové čísla.</p>
+  </div></section>
+</main>
+
+<footer class="foot" id="kontakt">
+  <div class="wrap">
+    <span class="brand"><svg aria-hidden="true"><use href="#mark"/></svg>Ocelka</span>
+    <div class="fcols">
+      <div><h3>Výrobky</h3><ul id="foot-cats"></ul></div>
+      <div><h3>Spolupráca</h3><ul><li><a href="#firmy">Pre firmy</a></li><li><a href="#zakazka">Jeden kus na zákazku</a></li><li><a href="#realizacie">Realizácie</a></li><li><a href="#cisla">O nás</a></li></ul></div>
+      <div><h3>Kontakt</h3><address><span>Priemyselná 12, 040 01 Košice</span><span>+421 900 000 000</span><span>dielna@ocelka.sk</span><span>Po – Pi 7:00 – 15:30</span></address></div>
+      <div><h3>Sledujte nás</h3><p style="margin:0;color:var(--faint);font-size:15px">Fotky z dielne a hotové zákazky.</p>
+        <div class="soc">
+          <a href="#kontakt" aria-label="Facebook"><svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M11.5 18v-7h2.4l.4-2.8h-2.8V6.6c0-.8.3-1.4 1.4-1.4h1.5V2.7a19 19 0 0 0-2.2-.1c-2.2 0-3.6 1.3-3.6 3.7v1.9H6.2V11h2.4v7"/></svg></a>
+          <a href="#kontakt" aria-label="Instagram"><svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14"/><circle cx="10" cy="10" r="3.3"/><path d="M14 6h.01"/></g></svg></a>
+          <a href="#kontakt" aria-label="WhatsApp"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <p class="legal">Ocelka s.r.o. · IČO 00 000 000 · Zapísaná v Obchodnom registri Mestského súdu Košice, oddiel Sro, vložka č. 00000/V · Ukážkové údaje</p>
+  </div>
+</footer>
+
+<nav class="dock" aria-label="Rýchly kontakt">
+  <a class="d1" href="#kontakt"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg>Zavolať</a>
+  <a href="#kontakt"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>
+</nav>
+
+<script>
+const CATS = [
+  { id:"stoly", name:"Stoly", sub:"Pracovné, gastro, na mieru", icon:'<rect x="6" y="10" width="40" height="4"/><rect x="9" y="14" width="3" height="20"/><rect x="40" y="14" width="3" height="20"/><path d="M12 27h28"/>' },
+  { id:"nohy", name:"Nohy na stôl", sub:"Profil, výška a pätka podľa výberu", icon:'<rect x="14" y="4" width="6" height="30"/><rect x="32" y="4" width="6" height="30"/><path d="M11 34h12M29 34h12M14 8h24"/>' },
+  { id:"drezy", name:"Drezy a umývadlá", sub:"Jednodielne, dvojdielne, s pedálom", icon:'<path d="M4 12h44"/><path d="M10 12v12h32V12"/><path d="M26 4v6M22 4h8"/>' },
+  { id:"odkvapy", name:"Odkvapy a klampiarske prvky", sub:"Žľaby, zvody, oplechovanie", icon:'<path d="M4 10h44"/><path d="M8 10c0 8 6 12 12 12h12c6 0 12-4 12-12"/><rect x="34" y="22" width="6" height="14"/>' },
+  { id:"diely", name:"Diely z nerezu", sub:"Konzoly, kryty, diely podľa výkresu", icon:'<path d="M8 32V10h12v10h24v12z"/><circle cx="14" cy="16" r="2"/><circle cx="38" cy="26" r="2"/>' },
+  { id:"hadice", name:"Hadice a armatúry", sub:"Kovové hadice, príruby, ventily", icon:'<path d="M6 22c10-14 30-14 40 0" stroke-dasharray="2 2"/><rect x="2" y="18" width="6" height="10"/><rect x="44" y="18" width="6" height="10"/>' },
+];
+const ITEMS = [
+  ["Stôl S-1200", "1200 × 600 × 900 mm", "stoly"], ["Stôl S-1600 s policou", "1600 × 700 × 900 mm", "stoly"], ["Gastro stôl s lemom", "na mieru", "stoly"],
+  ["Noha NS-720 hranatá", "60 × 60 × 720 mm", "nohy"], ["Noha NS-720 okrúhla", "Ø 60 × 720 mm", "nohy"], ["Noha NS-1050 barová", "60 × 60 × 1050 mm", "nohy"], ["Rám stola R-1400", "1400 × 700 mm", "nohy"],
+  ["Drez jednodielny", "500 × 400 × 250 mm", "drezy"], ["Drez dvojdielny", "1000 × 500 mm", "drezy"], ["Umývadlo na ruky s pedálom", "400 × 300 mm", "drezy"],
+  ["Odkvapový žľab", "125 mm", "odkvapy"], ["Zvodová rúra", "Ø 100 mm", "odkvapy"], ["Oplechovanie atiky", "rš 330 mm", "odkvapy"],
+  ["Konzola K-40", "40 × 40 × 3 mm", "diely"], ["Kryt podľa výkresu", "na mieru", "diely"],
+  ["Kovová hadica DN25", "DN25 · PN16", "hadice"], ["Príruba DN50", "DN50 · PN16", "hadice"], ["Guľový ventil 1\"", "DN25", "hadice"],
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const ico = p => `<svg viewBox="0 0 52 40" aria-hidden="true"><g fill="none" stroke="#2a5bb0" stroke-width="1.6">${p}</g></svg>`;
+const arr = '<svg class="icon arr" aria-hidden="true"><use href="#i-arr"/></svg>';
+const count = id => ITEMS.filter(i => i[2] === id).length;
+
+document.getElementById("cats").innerHTML = CATS.map(c =>
+  `<li><a href="#vyrobky">${ico(c.icon)}<span><b>${esc(c.name)}</b><small>${esc(c.sub)}</small></span>${arr}</a></li>`).join("");
+document.getElementById("foot-cats").innerHTML = CATS.map(c => `<li><a href="#vyrobky">${esc(c.name)}</a></li>`).join("");
+
+// Меню з розкриттям
+const MENU = [
+  { t:"Výrobky", sub: CATS.map(c => [c.name, "#vyrobky"]) },
+  { t:"Pre firmy", sub: [["Sériová výroba", "#firmy"], ["Poslať výkres", "#kontakt"], ["Realizácie pre firmy", "#realizacie"]] },
+  { t:"Jeden kus na zákazku", sub: [["Ako to funguje", "#zakazka"], ["Poslať fotku", "#kontakt"]] },
+  { t:"Realizácie", href:"#realizacie" },
+  { t:"O nás", href:"#cisla" },
+  { t:"Kontakt", href:"#kontakt" },
+];
+document.getElementById("acc").innerHTML = MENU.map((m, i) => m.sub
+  ? `<li><button class="acc-btn" type="button" aria-expanded="${i === 0}" aria-controls="acc-${i}">${esc(m.t)}<span class="pm" aria-hidden="true">${i === 0 ? "−" : "+"}</span></button>
+     <ul class="acc-sub" id="acc-${i}" ${i === 0 ? "" : "hidden"}>${m.sub.map(s => `<li><a href="${s[1]}" data-close>${esc(s[0])}<span>›</span></a></li>`).join("")}</ul></li>`
+  : `<li><a class="acc-link" href="${m.href}" data-close>${esc(m.t)}<span class="pm" aria-hidden="true">›</span></a></li>`).join("");
+document.getElementById("acc").addEventListener("click", e => {
+  const b = e.target.closest(".acc-btn");
+  if (!b) return;
+  const open = b.getAttribute("aria-expanded") === "true";
+  b.setAttribute("aria-expanded", String(!open));
+  b.querySelector(".pm").textContent = open ? "+" : "−";
+  document.getElementById(b.getAttribute("aria-controls")).hidden = open;
+});
+
+// Відкриття і закриття оверлеїв
+let lastFocus = null;
+function openOv(id) {
+  lastFocus = document.activeElement;
+  const ov = document.getElementById(id);
+  ov.hidden = false;
+  document.body.style.overflow = "hidden";
+  if (id === "menu") document.getElementById("menu-btn").setAttribute("aria-expanded", "true");
+  (id === "search" ? document.getElementById("q") : ov.querySelector(".close")).focus();
+  if (id === "search") render("");
+}
+function closeOv() {
+  document.querySelectorAll(".overlay").forEach(o => o.hidden = true);
+  document.body.style.overflow = "";
+  document.getElementById("menu-btn").setAttribute("aria-expanded", "false");
+  if (lastFocus) lastFocus.focus();
+}
+document.getElementById("menu-btn").addEventListener("click", () => openOv("menu"));
+document.getElementById("search-btn").addEventListener("click", () => openOv("search"));
+document.querySelectorAll(".overlay").forEach(o => o.addEventListener("click", e => { if (e.target.closest("[data-close]")) closeOv(); }));
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeOv(); langList.hidden = true; langBtn.setAttribute("aria-expanded", "false"); }
+});
+
+// Мова
+const langBtn = document.getElementById("lang-btn"), langList = document.getElementById("lang-list");
+langBtn.addEventListener("click", () => {
+  const open = langList.hidden;
+  langList.hidden = !open;
+  langBtn.setAttribute("aria-expanded", String(open));
+});
+document.addEventListener("click", e => { if (!e.target.closest(".lang")) { langList.hidden = true; langBtn.setAttribute("aria-expanded", "false"); } });
+
+// Пошук без діакритики: «noha» знаходить «Noha», «zlab» — «žľab»
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const results = document.getElementById("results");
+function render(q) {
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  const list = ITEMS.filter(it => { const hay = norm(it[0] + " " + it[1] + " " + CATS.find(c => c.id === it[2]).name); return words.every(w => hay.includes(w)); });
+  results.innerHTML = list.length
+    ? list.map(it => `<li><a href="#vyrobky" data-close><span class="cat">${esc(CATS.find(c => c.id === it[2]).name)}</span><span>${esc(it[0])}</span><span class="dim">${esc(it[1])}</span></a></li>`).join("")
+    : `<li class="empty">Nič sme nenašli. Napíšte nám, čo potrebujete. Vyrábame aj na mieru.</li>`;
+}
+document.getElementById("q").addEventListener("input", e => render(e.target.value));
+document.getElementById("search").addEventListener("click", e => { if (e.target.closest("#results [data-close]")) closeOv(); });
+</script>
+
+</body>
+</html>
