@@ -102,38 +102,64 @@ const Ocelka = (() => {
   ];
   const openFirst = page !== "dopyt";
   const acc = document.getElementById("acc");
-  acc.innerHTML = MENU.map((m, i) => m.sub
-    ? `<li><button class="acc-btn" type="button" aria-expanded="${openFirst && i === 0}" aria-controls="acc-${i}">${m.t}<span class="pm" aria-hidden="true">${openFirst && i === 0 ? "−" : "+"}</span></button>
-       <ul class="acc-sub" id="acc-${i}" ${openFirst && i === 0 ? "" : "hidden"}>${m.sub}</ul></li>`
-    : `<li><a class="acc-link" href="${m.href}" data-close>${m.t}<span class="pm" aria-hidden="true">›</span></a></li>`).join("");
+  acc.innerHTML = MENU.map((m, i) => {
+    const open = openFirst && i === 0;
+    return m.sub
+      ? `<li style="--i:${i}"><button class="acc-btn" type="button" aria-expanded="${open}" aria-controls="acc-${i}">${m.t}<span class="pm" aria-hidden="true"></span></button>
+         <div class="acc-panel${open ? " open" : ""}" id="acc-${i}"${open ? "" : " inert"}><div><ul class="acc-sub">${m.sub}</ul></div></div></li>`
+      : `<li style="--i:${i}"><a class="acc-link" href="${m.href}" data-close>${m.t}<span class="pm" aria-hidden="true">›</span></a></li>`;
+  }).join("");
   acc.addEventListener("click", e => {
     const b = e.target.closest(".acc-btn");
     if (!b) return;
     const open = b.getAttribute("aria-expanded") === "true";
+    const panel = document.getElementById(b.getAttribute("aria-controls"));
     b.setAttribute("aria-expanded", String(!open));
-    b.querySelector(".pm").textContent = open ? "+" : "−";
-    document.getElementById(b.getAttribute("aria-controls")).hidden = open;
+    panel.classList.toggle("open", !open);
+    panel.inert = open; // закритий пункт не ловить Tab і не читається екранним читачем
   });
 
-  // Оверлеї
-  let lastFocus = null;
+  // Оверлеї: анімація відкриття/закриття + пастка фокусу
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), textarea, select, [tabindex]:not([tabindex="-1"])';
+  let lastFocus = null, current = null, hideTimer = 0;
   const menuBtn = document.getElementById("menu-btn");
   function openOv(id) {
+    clearTimeout(hideTimer);
     lastFocus = document.activeElement;
-    document.getElementById(id).hidden = false;
+    current = document.getElementById(id);
+    current.hidden = false;
+    current.getBoundingClientRect(); // спершу намалювати закритий стан, тоді анімувати
+    current.classList.add("open");
+    // Усе, що під оверлеєм, стає недосяжним для Tab і екранного читача
+    for (const el of document.body.children) if (el !== current && !el.inert && el.tagName !== "SCRIPT") { el.inert = true; el.dataset.trap = ""; }
     document.body.style.overflow = "hidden";
     if (id === "menu") menuBtn.setAttribute("aria-expanded", "true");
-    if (id === "search") { render(q.value); q.focus(); } else document.querySelector("#menu .close").focus();
+    if (id === "search") { render(q.value); q.focus(); } else current.querySelector(".close").focus();
   }
   function closeOv() {
-    document.querySelectorAll(".overlay").forEach(o => o.hidden = true);
+    if (!current) return;
+    const ov = current;
+    current = null;
+    ov.classList.remove("open");
+    hideTimer = setTimeout(() => { ov.hidden = true; }, reduced() ? 0 : 180);
+    document.querySelectorAll("[data-trap]").forEach(el => { el.inert = false; delete el.dataset.trap; });
     document.body.style.overflow = "";
     menuBtn.setAttribute("aria-expanded", "false");
-    if (lastFocus) lastFocus.focus();
+    if (lastFocus) lastFocus.focus({ preventScroll: true });
   }
   menuBtn.addEventListener("click", () => openOv("menu"));
   document.getElementById("search-btn").addEventListener("click", () => openOv("search"));
   document.querySelectorAll(".overlay").forEach(o => o.addEventListener("click", e => { if (e.target.closest("[data-close]")) closeOv(); }));
+  // Tab з останнього елемента → на перший, Shift+Tab з першого → на останній
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Tab" || !current) return;
+    const items = [...current.querySelectorAll(FOCUSABLE)].filter(el => !el.closest("[inert]") && el.getClientRects().length);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !current.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   // Мова: поки є лише SK — кажемо про це, а не мовчимо
   const langBtn = document.getElementById("lang-btn"), langPop = document.getElementById("lang-pop"), langMsg = document.getElementById("lang-msg");
