@@ -46,12 +46,12 @@
 .leg.play .only-play { display: inline; }
 .leg.play [data-step] [pathLength] { stroke-dasharray: 1; stroke-dashoffset: 1; }
 .leg.play [data-step] :is(text, ellipse, polygon, rect, path, line):not([pathLength]) { opacity: 0; }
-.leg.play [data-step].on [pathLength] { stroke-dashoffset: 0; transition: stroke-dashoffset 1.3s cubic-bezier(.45,.05,.35,1); }
-.leg.play [data-step].on :is(text, ellipse, polygon, rect, path, line):not([pathLength]) { opacity: 1; transition: opacity .7s ease .9s; }
-.leg.play [data-step].on ellipse { transition: opacity 1.6s ease 1s; }
-.leg.play [data-step="4"].on .scan { animation: scan 1.5s cubic-bezier(.45,.05,.35,1) forwards; transition: none; }
-.leg.play [data-step="4"].on .meas { transition-delay: 1.5s; }
-.leg.play [data-step="5"].on .sheen { animation: sheen 1.6s ease-in-out forwards; transition: none; opacity: 1; }
+.leg.play [data-step].on [pathLength] { stroke-dashoffset: 0; transition: stroke-dashoffset 2.2s cubic-bezier(.45,.05,.35,1); }
+.leg.play [data-step].on :is(text, ellipse, polygon, rect, path, line):not([pathLength]) { opacity: 1; transition: opacity 1s ease 1.6s; }
+.leg.play [data-step].on ellipse { transition: opacity 2.4s ease 1.6s; }
+.leg.play [data-step="4"].on .scan { animation: scan 2.6s cubic-bezier(.45,.05,.35,1) forwards; transition: none; }
+.leg.play [data-step="4"].on .meas { transition-delay: 2.6s; }
+.leg.play [data-step="5"].on .sheen { animation: sheen 2.8s ease-in-out forwards; transition: none; opacity: 1; }
 @keyframes scan { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-234px); opacity: 0; } }
 @keyframes sheen { from { transform: translateY(0); opacity: 1; } to { transform: translateY(250px); opacity: 1; } }
 .scan, .sheen { transform-box: view-box; }
@@ -392,7 +392,7 @@ const intro = document.querySelector(".intro"), fig = document.querySelector(".l
 const leg = document.getElementById("leg"), mkBtn = document.getElementById("mk-btn"), mkHide = document.getElementById("mk-hide");
 const mkNow = document.getElementById("mk-now"), mkIc = document.getElementById("mk-ic");
 const STEPS = [...document.querySelectorAll("#mk-steps li")].map(li => ({ name: li.querySelector("b").textContent, text: li.lastChild.textContent.trim() }));
-const STEP_MS = 2000;
+const STEP_MS = 5000;
 let mkTimer = 0, playing = false;
 const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ICONS = {
