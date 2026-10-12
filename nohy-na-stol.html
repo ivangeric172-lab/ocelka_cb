@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nohy na stôl · Ocelka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Signika:wght@400;600&display=swap">
+<link rel="stylesheet" href="ocelka.css">
+<style>
+/* Категорія: зверху креслення ноги з позиціями 1–3, нижче фільтр і таблиця як кусовник (rozpiska) на кресленні */
+.intro { display: grid; gap: var(--s2); padding-block: var(--s2) var(--s3); }
+.intro-text { display: grid; gap: var(--s2); align-content: start; }
+.intro-text > div { display: grid; gap: var(--s1); }
+.legend { margin: 0; display: grid; border-top: 1px solid var(--ink); max-width: 52ch; }
+.legend div { display: grid; grid-template-columns: 32px minmax(0,1fr); gap: var(--s1); padding-block: var(--s1); border-bottom: 1px solid var(--faint); }
+.legend dt { width: 26px; height: 26px; border: 1px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font: 700 14px var(--f-head); }
+.legend dd { margin: 0; }
+.legend dd small { display: block; color: var(--muted); font-size: 14px; }
+.leg { width: 100%; max-width: 420px; height: auto; display: block; justify-self: center; }
+
+.sec { padding-block: var(--s3); border-top: 1px solid var(--ink); }
+.sec-head { display: grid; gap: var(--s1); margin-bottom: var(--s2); }
+
+/* Фільтр */
+.filters { display: grid; gap: var(--s2); margin-bottom: var(--s2); }
+.filters fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.filters legend { padding: 0; margin-bottom: var(--s1); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span { display: grid; padding: 8px 12px; border: 1px solid var(--faint); background: var(--paper); line-height: 1.25; }
+.chip small { font-size: 13px; color: var(--muted); }
+.chip input:hover + span { border-color: var(--line); }
+.chip input:checked + span { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip input:checked + span small { color: var(--faint); }
+.chip input:focus-visible + span { outline: 2px solid var(--line); outline-offset: 2px; }
+.check { display: inline-flex; gap: var(--s1); align-items: center; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--ink); margin: 0; }
+.hint { font-size: 14px; color: var(--muted); }
+.count { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s1); flex-wrap: wrap; font-size: 15px; padding-bottom: var(--s1); }
+.reset { all: unset; cursor: pointer; color: var(--line); text-decoration: underline; text-underline-offset: 3px; font-size: 15px; }
+.reset:focus-visible { outline: 2px solid var(--line); }
+
+/* Таблиця-кусовник */
+.bom { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bom th { text-align: left; font-weight: 600; font-size: 14px; color: var(--muted); padding: var(--s1); border-bottom: 1px solid var(--ink); white-space: nowrap; }
+.bom td { padding: 14px var(--s1); border-bottom: 1px solid var(--faint); vertical-align: middle; }
+.bom tbody tr { scroll-margin-top: calc(var(--tbh) + var(--s2)); }
+.bom tbody tr:target { background: var(--sheet); box-shadow: inset 3px 0 0 var(--line); }
+.bom .pos { width: 1%; color: var(--muted); }
+.bom .name b { display: block; font-weight: 600; }
+.bom .name small { color: var(--muted); font-size: 14px; }
+.bom .num { text-align: right; white-space: nowrap; }
+.bom .price b { font: 700 19px/1 var(--f-head); }
+.bom .act { width: 1%; text-align: right; }
+.bom .act .btn { padding: 9px 12px; font-size: 15px; white-space: nowrap; }
+.mini { width: 26px; height: 40px; vertical-align: middle; }
+.empty { padding: var(--s2) 0; border-bottom: 1px solid var(--faint); display: grid; gap: var(--s1); justify-items: start; }
+.empty b { font: 700 19px/1.2 var(--f-head); }
+.empty p { color: var(--muted); max-width: 52ch; }
+
+/* Телефон: рядок таблиці стає блоком */
+@media (max-width: 759px) {
+  .bom thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .bom, .bom tbody { display: block; }
+  .bom tr { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px var(--s2); padding-block: var(--s2); border-bottom: 1px solid var(--faint); }
+  .bom td { padding: 0; border: 0; }
+  .bom .pos, .bom .ico { display: none; }
+  .bom td { grid-column: 1 / -1; }
+  .bom .name { order: 1; } .bom .av-cell { order: 2; } .bom td[data-l] { order: 3; }
+  .bom td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-size: 14px; }
+  .bom .num { text-align: left; }
+  .bom .price { order: 4; grid-column: 1; align-self: center; margin-top: var(--s1); }
+  .bom .act { order: 5; grid-column: 2; margin-top: var(--s1); }
+}
+
+/* Na mieru і ціни для фірм */
+.two { display: grid; gap: var(--s3); }
+.two > div { display: grid; gap: var(--s2); align-content: start; }
+.two > div > div:first-child { display: grid; gap: var(--s1); }
+.tiers { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tiers th, .tiers td { text-align: left; padding: var(--s1); border-bottom: 1px solid var(--faint); }
+.tiers thead th { font-weight: 600; font-size: 14px; color: var(--muted); border-bottom-color: var(--ink); }
+.tiers td:last-child, .tiers th:last-child { text-align: right; }
+.tiers td b { font-weight: 600; }
+
+@media (min-width: 860px) {
+  .intro { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--s3); align-items: center; }
+  .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s2) var(--s3); }
+  .filters .check { margin-left: auto; margin-bottom: 8px; }
+  .two { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body data-page="nohy">
+<script src="ocelka.js"></script>
+
+<main id="top">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Kde ste"><ol><li><a href="index.html" data-home>Ocelka</a></li><li><a href="index.html#vyrobky" data-home>Výrobky</a></li><li aria-current="page">Nohy na stôl</li></ol></nav>
+
+    <section class="intro">
+      <div class="intro-text">
+        <div>
+          <h1>Nohy na stôl</h1>
+          <p class="lead">Nerez 1.4301, výška od 400 do 1050 mm. Tri typy máme na sklade, inú výšku vyrobíme od 1 kusa za 2 týždne.</p>
+        </div>
+        <dl class="legend" aria-label="Z čoho sa noha skladá">
+          <div><dt>1</dt><dd>Montážna doska 80 × 80 × 4 mm<small>4 otvory Ø 7 mm na skrutky do dosky stola</small></dd></div>
+          <div><dt>2</dt><dd>Profil hranatý 60 × 60 alebo okrúhly Ø 60 mm<small>Hrúbka steny 2 mm, povrch brúsený K320</small></dd></div>
+          <div><dt>3</dt><dd>Pätka so závitom M10<small>Vyrovná nerovnú podlahu do 15 mm</small></dd></div>
+        </dl>
+      </div>
+
+      <svg class="leg" viewBox="0 0 300 330" role="img" aria-label="Výkres nohy NS-720: montážna doska, profil 60 × 60 × 2 a nastaviteľná pätka, výška 720 ±0,5 mm">
+        <defs>
+          <radialGradient id="tint">
+            <stop offset="0" stop-color="#d8b04a" stop-opacity=".9"/>
+            <stop offset=".3" stop-color="#c07a2c" stop-opacity=".75"/>
+            <stop offset=".55" stop-color="#8a3f86" stop-opacity=".55"/>
+            <stop offset=".78" stop-color="#2f5fb3" stop-opacity=".35"/>
+            <stop offset="1" stop-color="#7fb2e5" stop-opacity="0"/>
+          </radialGradient>
+          <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="4" stroke="#2a5bb0" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect x="4" y="4" width="292" height="322" fill="#fbfcfe" stroke="#13233f" stroke-width="1.2"/>
+        <!-- побіжалість біля швів: доска–профіль і профіль–заглушка -->
+        <g opacity=".7">
+          <ellipse cx="112" cy="40" rx="12" ry="8" fill="url(#tint)"/><ellipse cx="148" cy="40" rx="12" ry="8" fill="url(#tint)"/>
+          <ellipse cx="130" cy="246" rx="20" ry="6" fill="url(#tint)"/>
+        </g>
+        <!-- нога -->
+        <g fill="none" stroke="#2a5bb0" stroke-width="1.6">
+          <rect x="90" y="30" width="80" height="6"/>
+          <rect x="115" y="36" width="30" height="210"/>
+          <rect x="125" y="246" width="10" height="14"/>
+          <rect x="114" y="260" width="32" height="8"/>
+        </g>
+        <path d="M125 249h10M125 253h10M125 257h10" stroke="#2a5bb0" stroke-width=".7"/>
+        <line x1="130" y1="20" x2="130" y2="278" stroke="#2a5bb0" stroke-width=".8" stroke-dasharray="10 3 2 3"/>
+        <!-- розмір висоти -->
+        <g stroke="#13233f" stroke-width=".9" fill="#13233f" font-family="Signika, sans-serif" font-size="10.5">
+          <line x1="52" y1="30" x2="52" y2="268"/><line x1="46" y1="30" x2="88" y2="30"/><line x1="46" y1="268" x2="112" y2="268"/>
+          <polygon points="52,30 49.5,37 54.5,37" stroke="none"/><polygon points="52,268 49.5,261 54.5,261" stroke="none"/>
+          <rect x="40" y="124" width="14" height="52" fill="#fbfcfe" stroke="none"/>
+          <text x="48" y="150" text-anchor="middle" transform="rotate(-90 48 150)" stroke="none">720 ±0,5</text>
+        </g>
+        <!-- позиції 1–3 -->
+        <g stroke="#13233f" stroke-width=".9" fill="none" font-family="Bitter, serif" font-size="11" font-weight="700">
+          <line x1="170" y1="33" x2="212" y2="33"/><circle cx="222" cy="33" r="10"/><text x="222" y="37" text-anchor="middle" fill="#13233f" stroke="none">1</text>
+          <line x1="145" y1="120" x2="212" y2="120"/><circle cx="222" cy="120" r="10"/><text x="222" y="124" text-anchor="middle" fill="#13233f" stroke="none">2</text>
+          <line x1="146" y1="264" x2="212" y2="264"/><circle cx="222" cy="264" r="10"/><text x="222" y="268" text-anchor="middle" fill="#13233f" stroke="none">3</text>
+        </g>
+        <!-- переріз профілю -->
+        <g font-family="Signika, sans-serif" font-size="10" fill="#13233f">
+          <rect x="242" y="150" width="34" height="34" fill="url(#hatch)" stroke="#2a5bb0" stroke-width="1.2"/>
+          <rect x="245" y="153" width="28" height="28" fill="#fbfcfe" stroke="#2a5bb0" stroke-width="1"/>
+          <text x="259" y="144" text-anchor="middle">A–A</text>
+          <text x="259" y="198" text-anchor="middle" font-size="9.5" fill="#4c5d78">60×60×2</text>
+        </g>
+        <path d="M108 190h-8M152 190h8" stroke="#13233f" stroke-width="1.4"/>
+        <text x="96" y="186" font-family="Signika, sans-serif" font-size="10" fill="#13233f" text-anchor="end">A</text>
+        <text x="164" y="186" font-family="Signika, sans-serif" font-size="10" fill="#13233f">A</text>
+        <!-- символ кутового шва a3 -->
+        <g stroke="#13233f" stroke-width=".9" fill="none">
+          <line x1="146" y1="38" x2="176" y2="70"/><polygon points="146,38 148,45 152,41" fill="#13233f" stroke="none"/>
+          <line x1="176" y1="70" x2="206" y2="70"/><polygon points="182,70 182,62 190,70"/>
+        </g>
+        <text x="193" y="66" font-family="Signika, sans-serif" font-size="10" fill="#13233f">a3</text>
+        <!-- штамп -->
+        <g font-family="Signika, sans-serif" fill="#13233f">
+          <rect x="4" y="288" width="292" height="38" fill="none" stroke="#13233f" stroke-width="1"/>
+          <line x1="110" y1="288" x2="110" y2="326" stroke="#13233f" stroke-width=".8"/>
+          <line x1="190" y1="288" x2="190" y2="326" stroke="#13233f" stroke-width=".8"/>
+          <text x="10" y="299" font-size="8" fill="#4c5d78">Názov</text><text x="10" y="317" font-size="12" font-weight="600">Noha NS-720</text>
+          <text x="116" y="299" font-size="8" fill="#4c5d78">Materiál</text><text x="116" y="317" font-size="12">1.4301</text>
+          <text x="196" y="299" font-size="8" fill="#4c5d78">Mierka</text><text x="196" y="317" font-size="12">1 : 5</text>
+        </g>
+      </svg>
+    </section>
+  </div>
+
+  <section class="sec" id="vyber"><div class="wrap">
+    <div class="sec-head"><h2>Vyberte nohu</h2><p class="hint">Výška nohy = výška stola − hrúbka dosky. Stôl 750 mm s doskou 30 mm potrebuje nohu 720 mm.</p></div>
+
+    <form class="filters" id="filters" aria-controls="list">
+      <fieldset>
+        <legend>Na aký stôl</legend>
+        <div class="chips">
+          <label class="chip"><input type="radio" name="h" value="all" checked><span>Všetky</span></label>
+          <label class="chip"><input type="radio" name="h" value="konf"><span>Konferenčný<small>noha do 500 mm</small></span></label>
+          <label class="chip"><input type="radio" name="h" value="jed"><span>Jedálenský<small>noha 700–760 mm</small></span></label>
+          <label class="chip"><input type="radio" name="h" value="prac"><span>Pracovný<small>noha 850–900 mm</small></span></label>
+          <label class="chip"><input type="radio" name="h" value="bar"><span>Barový<small>noha od 1000 mm</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Profil</legend>
+        <div class="chips">
+          <label class="chip"><input type="radio" name="p" value="all" checked><span>Všetky</span></label>
+          <label class="chip"><input type="radio" name="p" value="h"><span>Hranatý</span></label>
+          <label class="chip"><input type="radio" name="p" value="o"><span>Okrúhly</span></label>
+        </div>
+      </fieldset>
+      <label class="check"><input type="checkbox" name="stock" id="stock">Len na sklade</label>
+    </form>
+
+    <p class="count" id="count" aria-live="polite"></p>
+    <div id="list"></div>
+    <p class="note" style="margin-top:var(--s1)">Ukážkové ceny bez DPH za 1 kus.</p>
+  </div></section>
+
+  <section class="sec" id="na-mieru"><div class="wrap two">
+    <div>
+      <div>
+        <h2>Iná výška alebo profil</h2>
+        <p>Pošlite rozmery stola. Nohu vyrobíme od 1 kusa s presnosťou ±0,5 mm a cenu povieme do 1 pracovného dňa.</p>
+      </div>
+      <div class="row"><a class="btn dark" href="dopyt.html#p-nohy">Poslať rozmery <svg class="icon" aria-hidden="true"><use href="#i-arr"/></svg></a></div>
+    </div>
+    <div>
+      <div>
+        <h2>Séria pre firmu</h2>
+        <p>Cena za kus klesá s množstvom. Príklad pre NS-720 hranatú:</p>
+      </div>
+      <table class="tiers">
+        <thead><tr><th scope="col">Množstvo</th><th scope="col">Zľava</th><th scope="col">Cena za kus</th></tr></thead>
+        <tbody id="tiers"></tbody>
+      </table>
+      <div class="row"><a class="btn" href="dopyt.html#firma">Poslať výkres na sériu <svg class="icon" aria-hidden="true"><use href="#i-arr"/></svg></a></div>
+    </div>
+  </div></section>
+</main>
+
+<script>
+const { ITEMS, AV, esc, euro } = Ocelka;
+const NOHY = ITEMS.filter(i => i.cat === "nohy");
+const GROUPS = { konf: h => h <= 500, jed: h => h >= 700 && h <= 760, prac: h => h >= 850 && h <= 900, bar: h => h >= 1000 };
+
+// Мініатюра: силует ноги з відносною висотою
+const mini = it => {
+  const len = Math.round(8 + (it.h / 1050) * 28), w = it.shape === "o" ? 4 : 6;
+  return `<svg class="mini" viewBox="0 0 26 40" aria-hidden="true"><g fill="none" stroke="#2a5bb0" stroke-width="1.4">
+    <path d="M5 ${38 - len}h16"/>${it.shape === "o" ? `<path d="M${13 - w / 2} ${38 - len}v${len - 2}M${13 + w / 2} ${38 - len}v${len - 2}"/>` : `<rect x="${13 - w / 2}" y="${38 - len}" width="${w}" height="${len - 2}"/>`}<path d="M8 38h10"/></g></svg>`;
+};
+
+const list = document.getElementById("list"), count = document.getElementById("count"), form = document.getElementById("filters");
+
+function render() {
+  const f = new FormData(form);
+  const h = f.get("h"), p = f.get("p"), stock = f.get("stock") === "on";
+  const shown = NOHY.filter(it => (h === "all" || GROUPS[h](it.h)) && (p === "all" || it.shape === p) && (!stock || it.av === "ok"));
+  const filtered = h !== "all" || p !== "all" || stock;
+
+  count.innerHTML = `<span>${filtered ? `Zobrazujeme ${shown.length} z ${NOHY.length}` : `${NOHY.length} výrobkov`}</span>`
+    + (filtered ? `<button class="reset" type="button" data-reset>Zrušiť filter</button>` : "");
+
+  if (!shown.length) {
+    list.innerHTML = `<div class="empty"><b>Takú nohu nemáme v ponuke</b>
+      <p>Vyrobíme ju na mieru od 1 kusa. Napíšte výšku a profil, cenu povieme do 1 pracovného dňa.</p>
+      <div class="row"><a class="btn dark" href="dopyt.html#p-nohy">Poslať rozmery</a><button class="btn" type="button" data-reset>Zrušiť filter</button></div></div>`;
+    return;
+  }
+  // Názov bude odkazom na stránku výrobku, keď ju urobíme.
+  list.innerHTML = `<div style="overflow-x:auto"><table class="bom">
+    <thead><tr><th scope="col">Poz.</th><th scope="col"><span class="sr">Náčrt</span></th><th scope="col">Výrobok</th><th scope="col">Profil</th><th scope="col">Pätka</th><th scope="col" class="num">Cena od</th><th scope="col">Dostupnosť</th><th scope="col"><span class="sr">Akcia</span></th></tr></thead>
+    <tbody>${shown.map(it => `<tr id="${it.id}">
+      <td class="pos">${NOHY.indexOf(it) + 1}</td>
+      <td class="ico">${mini(it)}</td>
+      <td class="name"><b>${esc(it.name)}</b><small>${esc(it.dim)}</small></td>
+      <td data-l="Profil">${esc(it.prof)}</td>
+      <td data-l="Pätka">${esc(it.foot)}</td>
+      <td class="num price"><b>${euro(it.price)}</b></td>
+      <td class="av-cell"><span class="av ${it.av}">${AV[it.av]}</span></td>
+      <td class="act"><a class="btn" href="dopyt.html#p-${it.id}" aria-label="Opýtať sa na ${esc(it.name)}">Opýtať sa</a></td>
+    </tr>`).join("")}</tbody></table></div>`;
+}
+form.addEventListener("change", render);
+document.addEventListener("click", e => {
+  if (!e.target.closest("[data-reset]")) return;
+  form.reset();
+  render();
+  form.querySelector("input").focus();
+});
+render();
+// Prechod z vyhľadávania (#ns-720-h): riadok je už vykreslený, posunieme sa k nemu
+if (location.hash.length > 1) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+
+// Ceny pre sériu (ukážka)
+const base = Ocelka.item("ns-720-h").price;
+document.getElementById("tiers").innerHTML = [["1 – 9 ks", 0], ["10 – 49 ks", 10], ["50 – 299 ks", 18], ["300 ks a viac", null]].map(([q, d]) =>
+  `<tr><td>${q}</td><td>${d === null ? "dohodou" : d ? `−${d} %` : "–"}</td><td>${d === null ? "podľa výkresu" : `<b>${euro(+(base * (1 - d / 100)).toFixed(2))}</b>`}</td></tr>`).join("");
+</script>
+</body>
+</html>
