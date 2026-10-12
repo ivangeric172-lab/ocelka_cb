@@ -74,10 +74,30 @@ p { margin: 0; }
 .ov-top .wrap { height: var(--tbh); display: flex; align-items: center; justify-content: space-between; }
 .close { display: inline-flex; gap: var(--s1); align-items: center; height: 42px; padding: 0 14px; background: var(--ink); color: var(--paper); border: 0; cursor: pointer; font-weight: 600; }
 .acc { list-style: none; margin: 0; padding: var(--s1) 0 var(--s3); }
-.acc > li { border-bottom: 1px solid var(--ink); }
+.acc > li { position: relative; }
 .acc-btn, .acc-link { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 2px; font: 700 21px/1.2 var(--f-head); cursor: pointer; }
-.acc-btn .pm { font: 400 28px/1 var(--f-body); width: 24px; text-align: center; }
-.acc-sub { list-style: none; margin: 0; padding: 0 0 var(--s2) 16px; }
+.acc-btn:focus-visible, .acc-link:focus-visible { outline: 2px solid var(--line); outline-offset: -2px; }
+.acc-link .pm { font: 400 28px/1 var(--f-body); width: 24px; text-align: center; }
+/* «+» з двох рисок: при розкритті вертикальна стискається, лишається «−» */
+.acc-btn .pm { position: relative; width: 24px; height: 24px; flex: none; }
+.acc-btn .pm::before, .acc-btn .pm::after { content: ""; position: absolute; left: 3px; right: 3px; top: 11px; height: 2px; background: currentColor; }
+.acc-btn .pm::after { transform: rotate(90deg); transition: transform .25s ease; }
+.acc-btn[aria-expanded="true"] .pm::after { transform: rotate(90deg) scaleX(0); }
+/* Підпункти: висота анімується через grid-template-rows 0fr → 1fr */
+.acc-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+.acc-panel.open { grid-template-rows: 1fr; }
+.acc-panel > div { min-height: 0; overflow: hidden; }
+.acc-sub { list-style: none; margin: 0; padding: 0 0 var(--s2) 16px; opacity: 0; transition: opacity .2s ease; }
+.acc-panel.open .acc-sub { opacity: 1; transition-delay: .05s; }
+/* Лінія під пунктом «прокреслюється» зліва направо, як рейсфедером */
+.acc > li::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--ink); transform: scaleX(0); transform-origin: left; }
+.overlay.open .acc > li::after { transform: scaleX(1); transition: transform .45s cubic-bezier(.3,.7,.2,1) calc(.08s + var(--i, 0) * .05s); }
+
+/* Відкриття: аркуш розгортається згори вниз; закриття швидше */
+.overlay { clip-path: inset(0 0 100% 0); transition: clip-path .18s ease-in; }
+.overlay.open { clip-path: inset(0 0 0 0); transition: clip-path .3s cubic-bezier(.2,.75,.2,1); }
+.overlay > .wrap { opacity: 0; transform: translateY(-8px); transition: opacity .12s, transform .12s; }
+.overlay.open > .wrap { opacity: 1; transform: none; transition: opacity .25s .08s, transform .3s cubic-bezier(.2,.75,.2,1) .08s; }
 .acc-sub a, .acc-sub .soon { display: flex; justify-content: space-between; padding: 10px 2px; border-top: 1px solid var(--faint); }
 .acc-sub a span { color: var(--line); }
 .acc-sub .soon { color: var(--muted); }
@@ -121,6 +141,10 @@ p { margin: 0; }
 .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); background: var(--paper); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .dock a { display: flex; gap: var(--s1); align-items: center; justify-content: center; padding: 15px; font-weight: 600; }
 .dock .d1 { background: var(--ink); color: var(--paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .overlay > .wrap, .acc-panel, .acc-sub, .acc > li::after, .acc-btn .pm::after { transition: none !important; }
+}
 
 @media (min-width: 860px) {
   body { padding-bottom: 0; }
