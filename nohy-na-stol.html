@@ -18,7 +18,37 @@
 .legend dt { width: 26px; height: 26px; border: 1px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font: 700 14px var(--f-head); }
 .legend dd { margin: 0; }
 .legend dd small { display: block; color: var(--muted); font-size: 14px; }
-.leg { width: 100%; max-width: 420px; height: auto; display: block; justify-self: center; }
+.leg-fig { margin: 0; display: grid; gap: var(--s2); justify-items: center; }
+.leg { width: 100%; max-width: 420px; height: auto; display: block; }
+
+/* «Ako ju vyrábame»: kreslenie po krokoch výroby. Bez kliknutia je výkres celý. */
+.mk { width: 100%; max-width: 420px; display: grid; gap: var(--s2); justify-items: start; }
+.mk-steps { list-style: none; margin: 0; padding: 0; counter-reset: mk; display: grid; width: 100%; }
+.mk-steps li { counter-increment: mk; display: grid; grid-template-columns: 26px minmax(0,1fr); column-gap: var(--s1); padding-block: var(--s1); border-top: 1px solid var(--faint); font-size: 15px; color: var(--muted); transition: color .4s; }
+.mk-steps li::before { content: counter(mk); grid-row: span 2; width: 22px; height: 22px; border: 1px solid currentColor; display: grid; place-items: center; font: 700 12px var(--f-head); transition: background .4s, color .4s; }
+.mk-steps b { display: block; color: var(--ink); font-weight: 600; }
+.mk-steps li.now { color: var(--ink); }
+.mk-steps li.now::before { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.mk-steps li.done::before { border-color: var(--ok); color: var(--ok); }
+.leg .only-play { display: none; }
+.leg.play .only-play { display: inline; }
+.leg.play [data-step] [pathLength] { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.leg.play [data-step] :is(text, ellipse, polygon, rect, path, line):not([pathLength]) { opacity: 0; }
+.leg.play [data-step].on [pathLength] { stroke-dashoffset: 0; transition: stroke-dashoffset 1.3s cubic-bezier(.45,.05,.35,1); }
+.leg.play [data-step].on :is(text, ellipse, polygon, rect, path, line):not([pathLength]) { opacity: 1; transition: opacity .7s ease .9s; }
+.leg.play [data-step].on ellipse { transition: opacity 1.6s ease 1s; }
+.leg.play [data-step="4"].on .scan { animation: scan 1.5s cubic-bezier(.45,.05,.35,1) forwards; transition: none; }
+.leg.play [data-step="4"].on .meas { transition-delay: 1.5s; }
+.leg.play [data-step="5"].on .sheen { animation: sheen 1.6s ease-in-out forwards; transition: none; opacity: 1; }
+@keyframes scan { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-234px); opacity: 0; } }
+@keyframes sheen { from { transform: translateY(0); opacity: 1; } to { transform: translateY(250px); opacity: 1; } }
+.scan, .sheen { transform-box: view-box; }
+
+/* Riadok, na ktorý ste prišli z vyhľadávania: čiara sa prikreslí */
+.list-wrap { position: relative; overflow-x: auto; }
+.hit-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--line); transform: scaleX(0); transform-origin: left; animation: hit .7s cubic-bezier(.3,.7,.2,1) .25s forwards; pointer-events: none; }
+@keyframes hit { to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .hit-line { animation: none; transform: none; } }
 
 .sec { padding-block: var(--s3); border-top: 1px solid var(--ink); }
 .sec-head { display: grid; gap: var(--s1); margin-bottom: var(--s2); }
@@ -67,6 +97,7 @@
   .bom, .bom tbody { display: block; }
   .bom tr { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px var(--s2); padding-block: var(--s2); border-bottom: 1px solid var(--faint); }
   .bom td { padding: 0; border: 0; }
+  .bom tbody tr:target { padding-inline: 12px; }
   .bom .pos, .bom .ico { display: none; }
   .bom td { grid-column: 1 / -1; }
   .bom .name { order: 1; } .bom .av-cell { order: 2; } .bom td[data-l] { order: 3; }
@@ -114,7 +145,8 @@
         </dl>
       </div>
 
-      <svg class="leg" viewBox="0 0 300 330" role="img" aria-label="Výkres nohy NS-720: montážna doska, profil 60 × 60 × 2 a nastaviteľná pätka, výška 720 ±0,5 mm">
+      <figure class="leg-fig">
+      <svg class="leg" id="leg" viewBox="0 0 300 330" role="img" aria-label="Výkres nohy NS-720: montážna doska, profil 60 × 60 × 2 a nastaviteľná pätka, výška 720 ±0,5 mm">
         <defs>
           <radialGradient id="tint">
             <stop offset="0" stop-color="#d8b04a" stop-opacity=".9"/>
@@ -126,61 +158,97 @@
           <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <line x1="0" y1="0" x2="0" y2="4" stroke="#2a5bb0" stroke-width="1"/>
           </pattern>
+          <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset=".5" stop-color="#9fc0ec" stop-opacity=".7"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <clipPath id="prof-clip"><rect x="116" y="37" width="28" height="208"/></clipPath>
         </defs>
         <rect x="4" y="4" width="292" height="322" fill="#fbfcfe" stroke="#13233f" stroke-width="1.2"/>
-        <!-- побіжалість біля швів: доска–профіль і профіль–заглушка -->
-        <g opacity=".7">
-          <ellipse cx="112" cy="40" rx="12" ry="8" fill="url(#tint)"/><ellipse cx="148" cy="40" rx="12" ry="8" fill="url(#tint)"/>
-          <ellipse cx="130" cy="246" rx="20" ry="6" fill="url(#tint)"/>
-        </g>
-        <!-- нога -->
-        <g fill="none" stroke="#2a5bb0" stroke-width="1.6">
-          <rect x="90" y="30" width="80" height="6"/>
-          <rect x="115" y="36" width="30" height="210"/>
-          <rect x="125" y="246" width="10" height="14"/>
-          <rect x="114" y="260" width="32" height="8"/>
-        </g>
-        <path d="M125 249h10M125 253h10M125 257h10" stroke="#2a5bb0" stroke-width=".7"/>
         <line x1="130" y1="20" x2="130" y2="278" stroke="#2a5bb0" stroke-width=".8" stroke-dasharray="10 3 2 3"/>
-        <!-- розмір висоти -->
-        <g stroke="#13233f" stroke-width=".9" fill="#13233f" font-family="Signika, sans-serif" font-size="10.5">
-          <line x1="52" y1="30" x2="52" y2="268"/><line x1="46" y1="30" x2="88" y2="30"/><line x1="46" y1="268" x2="112" y2="268"/>
-          <polygon points="52,30 49.5,37 54.5,37" stroke="none"/><polygon points="52,268 49.5,261 54.5,261" stroke="none"/>
-          <rect x="40" y="124" width="14" height="52" fill="#fbfcfe" stroke="none"/>
-          <text x="48" y="150" text-anchor="middle" transform="rotate(-90 48 150)" stroke="none">720 ±0,5</text>
+
+        <!-- Krok 1: rezanie profilu, rozmer výšky, rez A–A -->
+        <g data-step="1">
+          <rect x="115" y="36" width="30" height="210" fill="none" stroke="#2a5bb0" stroke-width="1.6" pathLength="1"/>
+          <g stroke="#13233f" stroke-width=".9">
+            <line x1="52" y1="30" x2="52" y2="268" pathLength="1"/><line x1="46" y1="30" x2="88" y2="30" pathLength="1"/><line x1="46" y1="268" x2="112" y2="268" pathLength="1"/>
+          </g>
+          <g fill="#13233f" font-family="Signika, sans-serif" font-size="10.5">
+            <polygon points="52,30 49.5,37 54.5,37"/><polygon points="52,268 49.5,261 54.5,261"/>
+            <rect x="40" y="124" width="14" height="52" fill="#fbfcfe"/>
+            <text x="48" y="150" text-anchor="middle" transform="rotate(-90 48 150)">720 ±0,5</text>
+          </g>
+          <path d="M108 190h-8M152 190h8" stroke="#13233f" stroke-width="1.4"/>
+          <g font-family="Signika, sans-serif" font-size="10" fill="#13233f">
+            <text x="96" y="186" text-anchor="end">A</text><text x="164" y="186">A</text>
+            <rect x="242" y="150" width="34" height="34" fill="url(#hatch)" stroke="#2a5bb0" stroke-width="1.2"/>
+            <rect x="245" y="153" width="28" height="28" fill="#fbfcfe" stroke="#2a5bb0" stroke-width="1"/>
+            <text x="259" y="144" text-anchor="middle">A–A</text>
+            <text x="259" y="198" text-anchor="middle" font-size="9.5" fill="#4c5d78">60×60×2</text>
+          </g>
         </g>
-        <!-- позиції 1–3 -->
-        <g stroke="#13233f" stroke-width=".9" fill="none" font-family="Bitter, serif" font-size="11" font-weight="700">
-          <line x1="170" y1="33" x2="212" y2="33"/><circle cx="222" cy="33" r="10"/><text x="222" y="37" text-anchor="middle" fill="#13233f" stroke="none">1</text>
-          <line x1="145" y1="120" x2="212" y2="120"/><circle cx="222" cy="120" r="10"/><text x="222" y="124" text-anchor="middle" fill="#13233f" stroke="none">2</text>
-          <line x1="146" y1="264" x2="212" y2="264"/><circle cx="222" cy="264" r="10"/><text x="222" y="268" text-anchor="middle" fill="#13233f" stroke="none">3</text>
+
+        <!-- Krok 2: montážna doska, zvar a3, nábehové farby -->
+        <g data-step="2">
+          <g class="tint" opacity=".7"><ellipse cx="112" cy="40" rx="12" ry="8" fill="url(#tint)"/><ellipse cx="148" cy="40" rx="12" ry="8" fill="url(#tint)"/></g>
+          <rect x="90" y="30" width="80" height="6" fill="none" stroke="#2a5bb0" stroke-width="1.6" pathLength="1"/>
+          <g stroke="#13233f" stroke-width=".9" fill="none">
+            <line x1="146" y1="38" x2="176" y2="70" pathLength="1"/><line x1="176" y1="70" x2="206" y2="70" pathLength="1"/>
+            <polygon points="182,70 182,62 190,70" pathLength="1"/>
+            <line x1="170" y1="33" x2="212" y2="33" pathLength="1"/><circle cx="222" cy="33" r="10" pathLength="1"/>
+          </g>
+          <g fill="#13233f">
+            <polygon points="146,38 148,45 152,41"/>
+            <text x="193" y="66" font-family="Signika, sans-serif" font-size="10">a3</text>
+            <text x="222" y="37" text-anchor="middle" font-family="Bitter, serif" font-size="11" font-weight="700">1</text>
+          </g>
         </g>
-        <!-- переріз профілю -->
-        <g font-family="Signika, sans-serif" font-size="10" fill="#13233f">
-          <rect x="242" y="150" width="34" height="34" fill="url(#hatch)" stroke="#2a5bb0" stroke-width="1.2"/>
-          <rect x="245" y="153" width="28" height="28" fill="#fbfcfe" stroke="#2a5bb0" stroke-width="1"/>
-          <text x="259" y="144" text-anchor="middle">A–A</text>
-          <text x="259" y="198" text-anchor="middle" font-size="9.5" fill="#4c5d78">60×60×2</text>
+
+        <!-- Krok 3: matica M10 a pätka -->
+        <g data-step="3">
+          <g class="tint" opacity=".7"><ellipse cx="130" cy="246" rx="20" ry="6" fill="url(#tint)"/></g>
+          <g fill="none" stroke="#2a5bb0" stroke-width="1.6">
+            <rect x="125" y="246" width="10" height="14" pathLength="1"/>
+            <rect x="114" y="260" width="32" height="8" pathLength="1"/>
+          </g>
+          <path d="M125 249h10M125 253h10M125 257h10" stroke="#2a5bb0" stroke-width=".7"/>
+          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="146" y1="264" x2="212" y2="264" pathLength="1"/><circle cx="222" cy="264" r="10" pathLength="1"/></g>
+          <text x="222" y="268" text-anchor="middle" font-family="Bitter, serif" font-size="11" font-weight="700" fill="#13233f">3</text>
         </g>
-        <path d="M108 190h-8M152 190h8" stroke="#13233f" stroke-width="1.4"/>
-        <text x="96" y="186" font-family="Signika, sans-serif" font-size="10" fill="#13233f" text-anchor="end">A</text>
-        <text x="164" y="186" font-family="Signika, sans-serif" font-size="10" fill="#13233f">A</text>
-        <!-- символ кутового шва a3 -->
-        <g stroke="#13233f" stroke-width=".9" fill="none">
-          <line x1="146" y1="38" x2="176" y2="70"/><polygon points="146,38 148,45 152,41" fill="#13233f" stroke="none"/>
-          <line x1="176" y1="70" x2="206" y2="70"/><polygon points="182,70 182,62 190,70"/>
+
+        <!-- Krok 4: kontrola mierkou -->
+        <g data-step="4" class="only-play">
+          <rect class="scan" x="46" y="264" width="12" height="4" fill="#2e7d4f"/>
+          <text class="meas" x="152" y="284" font-family="Signika, sans-serif" font-size="10" font-weight="600" fill="#2e7d4f">nameraná 720,2 mm ✓</text>
         </g>
-        <text x="193" y="66" font-family="Signika, sans-serif" font-size="10" fill="#13233f">a3</text>
-        <!-- штамп -->
-        <g font-family="Signika, sans-serif" fill="#13233f">
-          <rect x="4" y="288" width="292" height="38" fill="none" stroke="#13233f" stroke-width="1"/>
-          <line x1="110" y1="288" x2="110" y2="326" stroke="#13233f" stroke-width=".8"/>
-          <line x1="190" y1="288" x2="190" y2="326" stroke="#13233f" stroke-width=".8"/>
-          <text x="10" y="299" font-size="8" fill="#4c5d78">Názov</text><text x="10" y="317" font-size="12" font-weight="600">Noha NS-720</text>
-          <text x="116" y="299" font-size="8" fill="#4c5d78">Materiál</text><text x="116" y="317" font-size="12">1.4301</text>
-          <text x="196" y="299" font-size="8" fill="#4c5d78">Mierka</text><text x="196" y="317" font-size="12">1 : 5</text>
+
+        <!-- Krok 5: brúsenie K320, pozícia 2, pečiatka -->
+        <g data-step="5">
+          <g clip-path="url(#prof-clip)" class="only-play"><rect class="sheen" x="116" y="-20" width="28" height="56" fill="url(#sheen)"/></g>
+          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="145" y1="120" x2="212" y2="120" pathLength="1"/><circle cx="222" cy="120" r="10" pathLength="1"/></g>
+          <text x="222" y="124" text-anchor="middle" font-family="Bitter, serif" font-size="11" font-weight="700" fill="#13233f">2</text>
+          <g font-family="Signika, sans-serif" fill="#13233f">
+            <rect x="4" y="288" width="292" height="38" fill="none" stroke="#13233f" stroke-width="1"/>
+            <line x1="110" y1="288" x2="110" y2="326" stroke="#13233f" stroke-width=".8"/>
+            <line x1="190" y1="288" x2="190" y2="326" stroke="#13233f" stroke-width=".8"/>
+            <text x="10" y="299" font-size="8" fill="#4c5d78">Názov</text><text x="10" y="317" font-size="12" font-weight="600">Noha NS-720</text>
+            <text x="116" y="299" font-size="8" fill="#4c5d78">Materiál</text><text x="116" y="317" font-size="12">1.4301</text>
+            <text x="196" y="299" font-size="8" fill="#4c5d78">Mierka</text><text x="196" y="317" font-size="12">1 : 5</text>
+          </g>
         </g>
       </svg>
+      <figcaption class="mk">
+        <button class="btn" type="button" id="mk-btn" aria-controls="mk-steps" aria-expanded="false"><span id="mk-l">Ako ju vyrábame</span><svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path id="mk-ic" fill="currentColor" d="M6 4l10 6-10 6z"/></svg></button>
+        <ol class="mk-steps" id="mk-steps" hidden aria-live="polite">
+          <li data-s="1"><b>Rezanie</b> Profil 60 × 60 × 2 mm režeme na 720 mm s toleranciou ±0,5 mm.</li>
+          <li data-s="2"><b>Zváranie</b> Montážnu dosku privaríme metódou TIG, kútový zvar a3. Nábehové farby pri zvare potom odstránime morením.</li>
+          <li data-s="3"><b>Pätka</b> Do spodnej zátky privaríme maticu M10 a naskrutkujeme pätku. Vyrovná podlahu do 15 mm.</li>
+          <li data-s="4"><b>Kontrola</b> Každý kus zmeriame mierkou podľa výkresu. Tento má 720,2 mm, je v tolerancii.</li>
+          <li data-s="5"><b>Brúsenie</b> Povrch prebrúsime na zrnitosť K320 a nohu označíme číslom výkresu.</li>
+        </ol>
+      </figcaption>
+      </figure>
     </section>
   </div>
 
@@ -266,7 +334,7 @@ function render() {
     return;
   }
   // Názov bude odkazom na stránku výrobku, keď ju urobíme.
-  list.innerHTML = `<div style="overflow-x:auto"><table class="bom">
+  list.innerHTML = `<div class="list-wrap"><table class="bom">
     <thead><tr><th scope="col">Poz.</th><th scope="col"><span class="sr">Náčrt</span></th><th scope="col">Výrobok</th><th scope="col">Profil</th><th scope="col">Pätka</th><th scope="col" class="num">Cena od</th><th scope="col">Dostupnosť</th><th scope="col"><span class="sr">Akcia</span></th></tr></thead>
     <tbody>${shown.map(it => `<tr id="${it.id}">
       <td class="pos">${NOHY.indexOf(it) + 1}</td>
@@ -288,7 +356,62 @@ document.addEventListener("click", e => {
 });
 render();
 // Prechod z vyhľadávania (#ns-720-h): riadok je už vykreslený, posunieme sa k nemu
-if (location.hash.length > 1) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+// Prechod z vyhľadávania (#ns-720-h): posunieme sa k riadku a podčiarkneme ho
+function markRow() {
+  document.querySelector(".hit-line")?.remove();
+  const row = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+  if (!row || !row.closest(".bom")) return;
+  row.scrollIntoView({ block: "center" });
+  const wrap = row.closest(".list-wrap");
+  const line = document.createElement("div");
+  line.className = "hit-line";
+  line.style.top = (row.offsetTop + row.offsetHeight - 2) + "px";
+  wrap.append(line);
+}
+markRow();
+addEventListener("hashchange", () => { form.reset(); render(); markRow(); });
+
+// «Ako ju vyrábame»: výkres sa kreslí po krokoch výroby
+const leg = document.getElementById("leg"), mkBtn = document.getElementById("mk-btn"), mkSteps = document.getElementById("mk-steps");
+const STEP_MS = 2000, STEPS = 5;
+let mkTimer = 0, playing = false;
+const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function setBtn(label, icon) {
+  document.getElementById("mk-l").textContent = label;
+  document.getElementById("mk-ic").setAttribute("d", icon);
+}
+const ICON_PLAY = "M6 4l10 6-10 6z", ICON_STOP = "M5 5h10v10H5z", ICON_AGAIN = "M15 10a5 5 0 1 1-1.5-3.6M15 3v4h-4";
+function mark(n) { mkSteps.querySelectorAll("li").forEach(li => { const s = +li.dataset.s; li.classList.toggle("now", s === n); li.classList.toggle("done", s < n || n > STEPS); }); }
+function stopMk() {
+  clearTimeout(mkTimer); playing = false;
+  leg.classList.remove("play");
+  leg.querySelectorAll("[data-step]").forEach(g => g.classList.remove("on"));
+  mark(STEPS + 1);
+  setBtn("Znova", ICON_AGAIN);
+  document.getElementById("mk-ic").setAttribute("fill", "none"); document.getElementById("mk-ic").setAttribute("stroke", "currentColor"); document.getElementById("mk-ic").setAttribute("stroke-width", "1.6");
+}
+function playMk() {
+  mkSteps.hidden = false; mkBtn.setAttribute("aria-expanded", "true");
+  if (reducedMotion()) { mark(STEPS + 1); mkBtn.hidden = true; return; } // bez animácie: len zoznam krokov
+  clearTimeout(mkTimer);
+  leg.classList.remove("play");
+  leg.querySelectorAll("[data-step]").forEach(g => g.classList.remove("on"));
+  leg.getBoundingClientRect();
+  leg.classList.add("play");
+  playing = true;
+  const ic = document.getElementById("mk-ic"); ic.setAttribute("fill", "currentColor"); ic.removeAttribute("stroke");
+  setBtn("Zastaviť", ICON_STOP);
+  let n = 1;
+  const next = () => {
+    if (n > STEPS) { playing = false; mark(STEPS + 1); setBtn("Znova", ICON_AGAIN); ic.setAttribute("fill", "none"); ic.setAttribute("stroke", "currentColor"); ic.setAttribute("stroke-width", "1.6"); return; }
+    leg.querySelector(`[data-step="${n}"]`).classList.add("on");
+    mark(n);
+    n++;
+    mkTimer = setTimeout(next, STEP_MS);
+  };
+  mkTimer = setTimeout(next, 250);
+}
+mkBtn.addEventListener("click", () => playing ? stopMk() : playMk());
 
 // Ceny pre sériu (ukážka)
 const base = Ocelka.item("ns-720-h").price;
