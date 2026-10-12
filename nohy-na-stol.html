@@ -22,14 +22,26 @@
 .leg { width: 100%; max-width: 420px; height: auto; display: block; }
 
 /* «Ako ju vyrábame»: kreslenie po krokoch výroby. Bez kliknutia je výkres celý. */
-.mk { width: 100%; max-width: 420px; display: grid; gap: var(--s2); justify-items: start; }
-.mk-steps { list-style: none; margin: 0; padding: 0; counter-reset: mk; display: grid; width: 100%; }
+.mk { width: 100%; max-width: 420px; display: grid; gap: var(--s1); }
+.leg-fig { scroll-margin-top: calc(var(--tbh) + var(--s1)); }
+/* Kroky musia byť vidieť spolu s výkresom: na počítači zoznam vľavo namiesto legendy, na telefóne jeden popis pod výkresom */
+.mk-steps, .mk-now { display: none; }
+.intro.mk-on .legend { display: none; }
+.intro.mk-on .mk-now { display: block; min-height: 4.8em; font-size: 15px; color: var(--muted); border-top: 1px solid var(--faint); padding-top: var(--s1); }
+.mk-now b { display: block; color: var(--ink); font-weight: 600; }
+.intro.mk-list .mk-steps { display: grid; }
+.intro.mk-list .mk-now { display: none; }
+.mk-steps { list-style: none; margin: 0; padding: 0; counter-reset: mk; width: 100%; max-width: 52ch; border-bottom: 1px solid var(--faint); }
 .mk-steps li { counter-increment: mk; display: grid; grid-template-columns: 26px minmax(0,1fr); column-gap: var(--s1); padding-block: var(--s1); border-top: 1px solid var(--faint); font-size: 15px; color: var(--muted); transition: color .4s; }
 .mk-steps li::before { content: counter(mk); grid-row: span 2; width: 22px; height: 22px; border: 1px solid currentColor; display: grid; place-items: center; font: 700 12px var(--f-head); transition: background .4s, color .4s; }
 .mk-steps b { display: block; color: var(--ink); font-weight: 600; }
 .mk-steps li.now { color: var(--ink); }
 .mk-steps li.now::before { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .mk-steps li.done::before { border-color: var(--ok); color: var(--ok); }
+@media (min-width: 860px) {
+  .intro.mk-on .mk-steps { display: grid; }
+  .intro.mk-on .mk-now { display: none; }
+}
 .leg .only-play { display: none; }
 .leg.play .only-play { display: inline; }
 .leg.play [data-step] [pathLength] { stroke-dasharray: 1; stroke-dashoffset: 1; }
@@ -143,6 +155,13 @@
           <div><dt>2</dt><dd>Profil hranatý 60 × 60 alebo okrúhly Ø 60 mm<small>Hrúbka steny 2 mm, povrch brúsený K320</small></dd></div>
           <div><dt>3</dt><dd>Pätka so závitom M10<small>Vyrovná nerovnú podlahu do 15 mm</small></dd></div>
         </dl>
+          <ol class="mk-steps" id="mk-steps" aria-label="Ako vyrábame nohu NS-720">
+            <li data-s="1"><b>Rezanie</b> Profil 60 × 60 × 2 mm režeme na 720 mm s toleranciou ±0,5 mm.</li>
+            <li data-s="2"><b>Zváranie</b> Montážnu dosku privaríme metódou TIG, kútový zvar a3. Nábehové farby pri zvare potom odstránime morením.</li>
+            <li data-s="3"><b>Pätka</b> Do spodnej zátky privaríme maticu M10 a naskrutkujeme pätku. Vyrovná podlahu do 15 mm.</li>
+            <li data-s="4"><b>Kontrola</b> Každý kus zmeriame mierkou podľa výkresu. Tento má 720,2 mm, je v tolerancii.</li>
+            <li data-s="5"><b>Brúsenie</b> Povrch prebrúsime na zrnitosť K320 a nohu označíme číslom výkresu.</li>
+          </ol>
       </div>
 
       <figure class="leg-fig">
@@ -196,7 +215,7 @@
           <g stroke="#13233f" stroke-width=".9" fill="none">
             <line x1="146" y1="38" x2="176" y2="70" pathLength="1"/><line x1="176" y1="70" x2="206" y2="70" pathLength="1"/>
             <polygon points="182,70 182,62 190,70" pathLength="1"/>
-            <line x1="170" y1="33" x2="212" y2="33" pathLength="1"/><circle cx="222" cy="33" r="10" pathLength="1"/>
+            <line x1="170" y1="33" x2="212" y2="33" pathLength="1"/><path d="M212 33a10 10 0 1 0 20 0a10 10 0 1 0 -20 0" pathLength="1"/>
           </g>
           <g fill="#13233f">
             <polygon points="146,38 148,45 152,41"/>
@@ -213,7 +232,7 @@
             <rect x="114" y="260" width="32" height="8" pathLength="1"/>
           </g>
           <path d="M125 249h10M125 253h10M125 257h10" stroke="#2a5bb0" stroke-width=".7"/>
-          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="146" y1="264" x2="212" y2="264" pathLength="1"/><circle cx="222" cy="264" r="10" pathLength="1"/></g>
+          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="146" y1="264" x2="212" y2="264" pathLength="1"/><path d="M212 264a10 10 0 1 0 20 0a10 10 0 1 0 -20 0" pathLength="1"/></g>
           <text x="222" y="268" text-anchor="middle" font-family="Bitter, serif" font-size="11" font-weight="700" fill="#13233f">3</text>
         </g>
 
@@ -226,7 +245,7 @@
         <!-- Krok 5: brúsenie K320, pozícia 2, pečiatka -->
         <g data-step="5">
           <g clip-path="url(#prof-clip)" class="only-play"><rect class="sheen" x="116" y="-20" width="28" height="56" fill="url(#sheen)"/></g>
-          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="145" y1="120" x2="212" y2="120" pathLength="1"/><circle cx="222" cy="120" r="10" pathLength="1"/></g>
+          <g stroke="#13233f" stroke-width=".9" fill="none"><line x1="145" y1="120" x2="212" y2="120" pathLength="1"/><path d="M212 120a10 10 0 1 0 20 0a10 10 0 1 0 -20 0" pathLength="1"/></g>
           <text x="222" y="124" text-anchor="middle" font-family="Bitter, serif" font-size="11" font-weight="700" fill="#13233f">2</text>
           <g font-family="Signika, sans-serif" fill="#13233f">
             <rect x="4" y="288" width="292" height="38" fill="none" stroke="#13233f" stroke-width="1"/>
@@ -239,14 +258,11 @@
         </g>
       </svg>
       <figcaption class="mk">
-        <button class="btn" type="button" id="mk-btn" aria-controls="mk-steps" aria-expanded="false"><span id="mk-l">Ako ju vyrábame</span><svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path id="mk-ic" fill="currentColor" d="M6 4l10 6-10 6z"/></svg></button>
-        <ol class="mk-steps" id="mk-steps" hidden aria-live="polite">
-          <li data-s="1"><b>Rezanie</b> Profil 60 × 60 × 2 mm režeme na 720 mm s toleranciou ±0,5 mm.</li>
-          <li data-s="2"><b>Zváranie</b> Montážnu dosku privaríme metódou TIG, kútový zvar a3. Nábehové farby pri zvare potom odstránime morením.</li>
-          <li data-s="3"><b>Pätka</b> Do spodnej zátky privaríme maticu M10 a naskrutkujeme pätku. Vyrovná podlahu do 15 mm.</li>
-          <li data-s="4"><b>Kontrola</b> Každý kus zmeriame mierkou podľa výkresu. Tento má 720,2 mm, je v tolerancii.</li>
-          <li data-s="5"><b>Brúsenie</b> Povrch prebrúsime na zrnitosť K320 a nohu označíme číslom výkresu.</li>
-        </ol>
+        <p class="mk-now" id="mk-now" aria-live="polite"></p>
+        <div class="row">
+          <button class="btn" type="button" id="mk-btn" aria-controls="mk-steps"><span id="mk-l">Ako ju vyrábame</span><svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path id="mk-ic" d=""/></svg></button>
+          <button class="btn" type="button" id="mk-hide" hidden>Skryť postup</button>
+        </div>
       </figcaption>
       </figure>
     </section>
@@ -372,46 +388,73 @@ markRow();
 addEventListener("hashchange", () => { form.reset(); render(); markRow(); });
 
 // «Ako ju vyrábame»: výkres sa kreslí po krokoch výroby
-const leg = document.getElementById("leg"), mkBtn = document.getElementById("mk-btn"), mkSteps = document.getElementById("mk-steps");
-const STEP_MS = 2000, STEPS = 5;
+const intro = document.querySelector(".intro"), fig = document.querySelector(".leg-fig");
+const leg = document.getElementById("leg"), mkBtn = document.getElementById("mk-btn"), mkHide = document.getElementById("mk-hide");
+const mkNow = document.getElementById("mk-now"), mkIc = document.getElementById("mk-ic");
+const STEPS = [...document.querySelectorAll("#mk-steps li")].map(li => ({ name: li.querySelector("b").textContent, text: li.lastChild.textContent.trim() }));
+const STEP_MS = 2000;
 let mkTimer = 0, playing = false;
 const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ICONS = {
+  play: ["M6 4l10 6-10 6z", true], stop: ["M5 5h10v10H5z", true],
+  again: ["M15 10a5 5 0 1 1-1.5-3.6M15 3v4h-4", false],
+};
 function setBtn(label, icon) {
   document.getElementById("mk-l").textContent = label;
-  document.getElementById("mk-ic").setAttribute("d", icon);
+  const [d, filled] = ICONS[icon];
+  mkIc.setAttribute("d", d);
+  mkIc.setAttribute("fill", filled ? "currentColor" : "none");
+  mkIc.setAttribute("stroke", filled ? "none" : "currentColor");
+  mkIc.setAttribute("stroke-width", "1.6");
 }
-const ICON_PLAY = "M6 4l10 6-10 6z", ICON_STOP = "M5 5h10v10H5z", ICON_AGAIN = "M15 10a5 5 0 1 1-1.5-3.6M15 3v4h-4";
-function mark(n) { mkSteps.querySelectorAll("li").forEach(li => { const s = +li.dataset.s; li.classList.toggle("now", s === n); li.classList.toggle("done", s < n || n > STEPS); }); }
-function stopMk() {
+setBtn("Ako ju vyrábame", "play");
+function mark(n) {
+  document.querySelectorAll("#mk-steps li").forEach(li => { const s = +li.dataset.s; li.classList.toggle("now", s === n); li.classList.toggle("done", s < n); });
+  const st = STEPS[Math.min(n, STEPS.length) - 1];
+  if (st) mkNow.innerHTML = `<b>${Math.min(n, STEPS.length)} / ${STEPS.length} · ${st.name}</b>${st.text}`;
+}
+function clearLeg() { leg.classList.remove("play"); leg.querySelectorAll("[data-step]").forEach(g => g.classList.remove("on")); }
+// Zastaviť / Skryť postup: všetko späť do pôvodného stavu
+function resetMk() {
   clearTimeout(mkTimer); playing = false;
-  leg.classList.remove("play");
-  leg.querySelectorAll("[data-step]").forEach(g => g.classList.remove("on"));
-  mark(STEPS + 1);
-  setBtn("Znova", ICON_AGAIN);
-  document.getElementById("mk-ic").setAttribute("fill", "none"); document.getElementById("mk-ic").setAttribute("stroke", "currentColor"); document.getElementById("mk-ic").setAttribute("stroke-width", "1.6");
+  clearLeg();
+  intro.classList.remove("mk-on", "mk-list");
+  mkHide.hidden = true;
+  setBtn("Ako ju vyrábame", "play");
+}
+function finish() {
+  playing = false;
+  mark(STEPS.length + 1);
+  mkNow.innerHTML = `<b>Hotovo · noha NS-720</b>Vyrobená, zmeraná a označená podľa výkresu.`;
+  setBtn("Znova", "again");
+  mkHide.hidden = false;
 }
 function playMk() {
-  mkSteps.hidden = false; mkBtn.setAttribute("aria-expanded", "true");
-  if (reducedMotion()) { mark(STEPS + 1); mkBtn.hidden = true; return; } // bez animácie: len zoznam krokov
+  intro.classList.add("mk-on");
+  if (reducedMotion()) { intro.classList.add("mk-list"); mark(STEPS.length + 1); mkHide.hidden = false; mkBtn.hidden = true; return; } // bez animácie: len zoznam krokov
   clearTimeout(mkTimer);
-  leg.classList.remove("play");
-  leg.querySelectorAll("[data-step]").forEach(g => g.classList.remove("on"));
+  clearLeg();
   leg.getBoundingClientRect();
   leg.classList.add("play");
   playing = true;
-  const ic = document.getElementById("mk-ic"); ic.setAttribute("fill", "currentColor"); ic.removeAttribute("stroke");
-  setBtn("Zastaviť", ICON_STOP);
+  mkHide.hidden = true;
+  setBtn("Zastaviť", "stop");
+  mark(1);
+  // Výkres a popis musia byť na obrazovke celé
+  const r = fig.getBoundingClientRect();
+  if (r.top < 64 || r.bottom > innerHeight) fig.scrollIntoView({ behavior: "smooth", block: "start" });
   let n = 1;
   const next = () => {
-    if (n > STEPS) { playing = false; mark(STEPS + 1); setBtn("Znova", ICON_AGAIN); ic.setAttribute("fill", "none"); ic.setAttribute("stroke", "currentColor"); ic.setAttribute("stroke-width", "1.6"); return; }
+    if (n > STEPS.length) return finish();
     leg.querySelector(`[data-step="${n}"]`).classList.add("on");
     mark(n);
     n++;
     mkTimer = setTimeout(next, STEP_MS);
   };
-  mkTimer = setTimeout(next, 250);
+  mkTimer = setTimeout(next, 400);
 }
-mkBtn.addEventListener("click", () => playing ? stopMk() : playMk());
+mkBtn.addEventListener("click", () => playing ? resetMk() : playMk());
+mkHide.addEventListener("click", () => { resetMk(); mkBtn.hidden = false; mkBtn.focus(); });
 
 // Ceny pre sériu (ukážka)
 const base = Ocelka.item("ns-720-h").price;
