@@ -7,22 +7,26 @@ public class Vyrobok {
     private final String nazov;
     private final Long cena;
     private final Dostupnost dostupnost;
+    private final Material material;
 
-    public Vyrobok(long id, String kod, String nazov, Long cena, Dostupnost dostupnost) {
+    public Vyrobok(long id, String kod, String nazov, Long cena, Dostupnost dostupnost, Material material) {
         if (id <= 0) {
             throw new IllegalArgumentException("ID je zle");
         }
         if (kod == null || kod.isBlank()) {
-            throw new IllegalArgumentException("Kod je zly");
+            throw new IllegalArgumentException("Kod nesmie byt prazdny");
         }
         if (nazov == null || nazov.isBlank()) {
             throw new IllegalArgumentException("Nazov je zly");
         }
         if (cena != null && cena < 0) {
-            throw new IllegalArgumentException("Cena je zla");
+            throw new IllegalArgumentException("Cena nesmie byt zaporna");
         }
         if (dostupnost == null) {
             throw new IllegalArgumentException("Dostupnost je zla");
+        }
+        if (material == null) {
+            throw new IllegalArgumentException("Material nesmie byt prazdny");
         }
 
         this.id = id;
@@ -30,6 +34,7 @@ public class Vyrobok {
         this.nazov = nazov;
         this.cena = cena;
         this.dostupnost = dostupnost;
+        this.material = material;
     }
 
     public long getId() {
@@ -52,6 +57,10 @@ public class Vyrobok {
         return dostupnost;
     }
 
+    public Material getMaterial() {
+        return material;
+    }
+
     public String showPrice() {
         if (cena == null) {
             return "Cena dohodou";
@@ -59,4 +68,6 @@ public class Vyrobok {
             return String.format("%d,%02d €", cena / 100, cena % 100);
         }
     }
+
+
 }
