@@ -2,16 +2,19 @@ package org.example;
 
 public class Main {
     static void main() {
-        Vyrobok nohaNaStol = new Vyrobok(1234, "N273-4", "Noha na stol", 5L, Dostupnost.NA_OBJEDNAVKU, Material.OCEL_1_4301);
-        Vyrobok nohaNaStolicku = new Vyrobok(5678, "N942-02", "Noha na stolicku", 2405L, Dostupnost.NA_SKLADE, Material.OCEL_1_4404);
-        Vyrobok nohaNaDaco = new Vyrobok(56478, "N942-02", "Noha na stolicku", null, Dostupnost.NA_SKLADE, Material.OCEL_1_4301);
+        Vyrobok nohaNaStol = new Vyrobok(1234L, "N273-4", "Noha na stol", 5L, Dostupnost.NA_OBJEDNAVKU, Material.OCEL_1_4301);
+        Vyrobok nohaNaStolicku = new Vyrobok(5678L, "N942-02", "Noha na stolicku", 2405L, Dostupnost.NA_SKLADE, Material.OCEL_1_4404);
+        Vyrobok nohaNaDaco = new Vyrobok(null, "N942-02", "Noha na stolicku", null, Dostupnost.NA_SKLADE, Material.OCEL_1_4301);
 
         Katalog vyrobky = new Katalog();
 
         vyrobky.pridaj(nohaNaStol);
         vyrobky.pridaj(nohaNaStolicku);
-        vyrobky.pridaj(nohaNaDaco);
-
+        try {
+            vyrobky.pridaj(nohaNaDaco);
+        }catch(IllegalArgumentException e){
+            IO.println(e.getMessage());
+        }
         IO.println(nohaNaStol.getKod());
         IO.println(nohaNaStol.showPrice());
         IO.println(nohaNaStol.getDostupnost().getPopis());
@@ -27,6 +30,9 @@ public class Main {
         IO.println(nohaNaStolicku.getMaterial().getMarkovanie());
         IO.println(nohaNaStol.getMaterial().getMarkovanie());
         IO.println(nohaNaDaco.getMaterial().getMarkovanie());
+        IO.println(nohaNaStol.showId());
+        IO.println(nohaNaStolicku.showId());
+        IO.println(nohaNaDaco.showId());
 
         IO.println(vyrobky.pocet());
     }

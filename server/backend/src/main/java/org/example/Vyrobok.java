@@ -2,16 +2,16 @@ package org.example;
 
 public class Vyrobok {
 
-    private final long id;
+    private final Long id;
     private final String kod;
     private final String nazov;
     private final Long cena;
     private final Dostupnost dostupnost;
     private final Material material;
 
-    public Vyrobok(long id, String kod, String nazov, Long cena, Dostupnost dostupnost, Material material) {
-        if (id <= 0) {
-            throw new IllegalArgumentException("ID je zle");
+    public Vyrobok(Long id, String kod, String nazov, Long cena, Dostupnost dostupnost, Material material) {
+        if (id != null && id <= 0) {
+            throw new IllegalArgumentException("ID musi byt kladne");
         }
         if (kod == null || kod.isBlank()) {
             throw new IllegalArgumentException("Kod nesmie byt prazdny");
@@ -37,7 +37,7 @@ public class Vyrobok {
         this.material = material;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -69,5 +69,11 @@ public class Vyrobok {
         }
     }
 
-
+    public String showId() {
+        if (id == null) {
+            return "ID este nie je nastavene";
+        }else{
+            return String.format("%d", id);
+        }
+    }
 }
